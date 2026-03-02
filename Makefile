@@ -126,12 +126,14 @@ debug: clean $(NAME)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ CLEAN TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
+PADDING = $(shell $${NAME})
+
 # Remove object files and build artifacts
 clean:
 	@if [ -d $(OBJ_DIR) ]; then \
 		echo "> [ $(NAME) ] $(YELLOW) Cleaning object files...$(RESET)"; \
 		rm -rf $(OBJ_DIR); \
-		printf "> [ %-5s ] %b %s Object files cleaned!%b\n" "$(NAME)" \
+		printf "> [ %-$(PADDING)s ] %b %s Object files cleaned!%b\n" "$(NAME)" \
 		"$(YELLOW)" "$(NAME)" "$(RESET)"; \
 	else \
 		echo "> [ $(NAME) ] $(BOLD)$(YELLOW) Nothing to be done with \
@@ -144,7 +146,7 @@ fclean: clean
 		echo "> [ $(NAME) ] $(YELLOW) Removing $(NAME)...$(RESET)"; \
 		rm -f $(NAME); \
 		rm -f $(MARKER); \
-		printf "> [ %-5s ] %b %s removed!%b\n" "$(NAME)" "$(YELLOW)" \
+		printf "> [ %-$(PADDING)s ] %b %s removed!%b\n" "$(NAME)" "$(YELLOW)" \
 		"$(NAME)" "$(RESET)"; \
 	else \
 		echo "> [ $(NAME) ] $(BOLD)$(YELLOW) Nothing to be done with \
