@@ -14,9 +14,11 @@ SRC_DIR			:= src
 OBJ_DIR			:= obj
 DEP_DIR			:= $(OBJ_DIR)/.deps
 
+# Tell Make to look in $(SRC_DIR)
+# when resolving dependencies for %.o targets
 VPATH			:= $(SRC_DIR)
 
-# Include paths and libraries
+# Include paths
 INC				:= -I./include
 
 # Dependency generation flags
@@ -37,7 +39,6 @@ RESET			:= $(shell tput sgr0)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SOURCE FILES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-# Parsing and syntax analysis
 SRCS_MAIN := \
 	main.cpp \
 
@@ -47,13 +48,13 @@ SRCS := \
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-# Object files and build tracking
+# Derived build variables
 OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-# Default target with intelligent rebuild detection
+# Default target
 all: $(NAME)
 	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
@@ -121,7 +122,6 @@ fclean: clean
 	@if [ -f $(NAME) ]; then \
 		echo "> [ $(NAME) ] $(YELLOW) Removing $(NAME)...$(RESET)"; \
 		rm -f $(NAME); \
-		rm -f $(MARKER); \
 		printf "> [ %-$(PADDING)s ] %b %s removed!%b\n" "$(NAME)" "$(YELLOW)" \
 		"$(NAME)" "$(RESET)"; \
 	else \
@@ -137,5 +137,4 @@ re:
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ TARGET DECLARATIONS ■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-# Preserve intermediate object files and declare phony targets
 .PHONY: all debug clean fclean re
