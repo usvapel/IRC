@@ -3,6 +3,6 @@
 obj
 .cache
 compile_commands.json
-.standard_build
+.marker
 
 

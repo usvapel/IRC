@@ -51,7 +51,7 @@ OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
 
 # Build markers and progress tracking
-MARKER_STANDARD		:= .standard_build
+MARKER				:= .marker
 PROGRESS_FILE		:= $(OBJ_DIR)/.progress
 
 # Utility variables for build optimization
@@ -76,12 +76,12 @@ is_up_to_date = \
 
 # Default target with intelligent rebuild detection
 all:
-	@if [ -f $(MARKER_STANDARD) ] && $(is_up_to_date) 2>/dev/null; then \
+	@if [ -f $(MARKER) ] && $(is_up_to_date) 2>/dev/null; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
 	else \
 		echo ">$(BOLD)$(WHITE) Starting to build $(NAME)...$(RESET)"; \
 		$(MAKE) $(NAME) --no-print-directory; \
-		touch $(MARKER_STANDARD); \
+		touch $(MARKER); \
 		echo ">$(BOLD)$(GREEN) All components built successfully!$(RESET)"; \
 	fi
 
@@ -89,7 +89,7 @@ all:
 $(NAME): $(OBJS)
 	@echo ">$(BOLD)$(GREEN) Linking $(NAME)...$(RESET)"
 	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS) $(OPTFLAGS)
-	@touch $(MARKER_STANDARD)
+	@touch $(MARKER)
 	@rm -f $(PROGRESS_FILE)
 	@echo ">$(BOLD)$(GREEN) $(NAME) successfully compiled!$(RESET)"
 
@@ -142,7 +142,7 @@ fclean: clean
 	@if [ -f $(NAME) ]; then \
 		echo "> [ $(NAME) ] $(YELLOW) Removing $(NAME)...$(RESET)"; \
 		rm -f $(NAME); \
-		rm -f $(MARKER_STANDARD); \
+		rm -f $(MARKER); \
 		printf "> [ %-5s ] %b %s removed!%b\n" "$(NAME)" "$(YELLOW)" \
 		"$(NAME)" "$(RESET)"; \
 	else \
