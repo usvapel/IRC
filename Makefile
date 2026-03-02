@@ -39,11 +39,11 @@ RESET			:= $(shell tput sgr0)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SOURCE FILES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-SRCS_MAIN := \
+SRCS_MAIN	:= \
 	main.cpp \
 
 # Combine all source files
-SRCS := \
+SRCS		:= \
 	$(SRCS_MAIN)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
@@ -51,8 +51,9 @@ SRCS := \
 # Derived build variables
 OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
+LOCK_FILE			:= $(OBJ_DIR)/.build.lock
 
-SHELL := /bin/bash
+SHELL	:= /bin/bash
 
 # Displays an animated progress bar with spinner, percentage,
 # and current file name during build
@@ -100,9 +101,6 @@ $(NAME): $(OBJS)
 	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 	@touch $(OBJ_DIR)/.built
 	@echo ">$(BOLD)$(GREEN) $(NAME) successfully linked!$(RESET)"
-
-
-LOCK_FILE     := $(OBJ_DIR)/.build.lock
 
 .PHONY: _reset_progress
 _reset_progress:
