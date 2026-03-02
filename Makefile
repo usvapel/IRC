@@ -5,9 +5,9 @@ NAME			:= irc
 CXX				:= c++
 
 # Compiler flags
-CXXFLAGS		:= -Wall -Wextra -Werror -std=c++20 -Wshadow
-DEBUG_FLAGS		:= -g3 -fsanitize=address -fsanitize=undefined
-OPTFLAGS		:= -O2
+CXXFLAGS		:= -Wall -Wextra -Werror -Wshadow -std=c++20
+CXXFLAGS		+= -O2
+DEBUG_FLAGS		:= -g3 -fsanitize=address -fsanitize=undefined -O0
 
 # Directory structure
 SRC_DIR			:= src
@@ -50,50 +50,27 @@ SRCS := \
 OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
 
-# Build markers and progress tracking
-MARKER				:= .marker
-PROGRESS_FILE		:= $(OBJ_DIR)/.progress
-
-# Utility variables for build optimization
-LATEST_SRC			:= $(shell find src -name "*.cpp" | \
-							xargs ls -t 2>/dev/null | head -1)
-OBJ_FILES_EXIST		:= $(shell [ -n "$(wildcard $(OBJ_DIR)/*.o)" ] \
-							&& echo yes)
-
-# Looking for updated header files
-LATEST_HEADER		:= $(shell find include \
-							-name "*.hpp" -o -name "*.tpp" \
-							2>/dev/null | xargs ls -t \
-							2>/dev/null | head -1)
-
-# Check if binary is up to date
-is_up_to_date = \
-	[ -f $(NAME) ] && \
-	[ "$(NAME)" -nt $(LATEST_SRC) ] && \
-	[ "$(NAME)" -nt $(LATEST_HEADER) ] && \
-	[ "$(OBJ_FILES_EXIST)" = "yes" ]
-
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Default target with intelligent rebuild detection
 all:
-	@if [ -f $(MARKER) ] && $(is_up_to_date) 2>/dev/null; then \
+	@$(MAKE) -s $(NAME)
+	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
 	else \
-		echo ">$(BOLD)$(WHITE) Starting to build $(NAME)...$(RESET)"; \
-		$(MAKE) $(NAME) --no-print-directory; \
-		touch $(MARKER); \
+		rm -f $(OBJ_DIR)/.built; \
 		echo ">$(BOLD)$(GREEN) All components built successfully!$(RESET)"; \
 	fi
 
 # Main executable linking with dependency checking
 $(NAME): $(OBJS)
 	@echo ">$(BOLD)$(GREEN) Linking $(NAME)...$(RESET)"
-	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS) $(OPTFLAGS)
-	@touch $(MARKER)
-	@rm -f $(PROGRESS_FILE)
-	@echo ">$(BOLD)$(GREEN) $(NAME) successfully compiled!$(RESET)"
+	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
+	@touch $(OBJ_DIR)/.built
+	@echo ">$(BOLD)$(GREEN) $(NAME) successfully linked!$(RESET)"
 
+
+PROGRESS_FILE := $(OBJ_DIR)/.progress
 # Individual object file compilation with progress tracking
 $(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR) $(DEP_DIR)
 	@if [ -f $(PROGRESS_FILE) ]; then \
@@ -103,7 +80,7 @@ $(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR) $(DEP_DIR)
 		printf "> [%3d%%] $(CYAN)(%d/%d files) Compiling $<... $(RESET)\n" \
 			$$((NEXT*100/$(TOTAL_SRCS))) $$((NEXT)) $(TOTAL_SRCS); \
 	fi
-	@$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(DEPFLAGS) -c $< -o $@ $(INC)
+	@$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@ $(INC)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ ADDITIONAL TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
@@ -120,7 +97,6 @@ $(DEP_DIR): | $(OBJ_DIR)
 
 # Development and debugging build configuration
 debug: CXXFLAGS	+= $(DEBUG_FLAGS)
-debug: OPTFLAGS	:= -O0
 debug: clean $(NAME)
 	@echo ">$(BOLD)$(CYAN)  Debug build completed!$(RESET)"
 
@@ -157,10 +133,9 @@ fclean: clean
 re:
 	@echo "> [ $(NAME) ] $(BOLD)$(WHITE) Rebuilding from scratch...$(RESET)"
 	@$(MAKE) fclean --no-print-directory
-	@$(MAKE) $(NAME) --no-print-directory
+	@$(MAKE) all --no-print-directory
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ TARGET DECLARATIONS ■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Preserve intermediate object files and declare phony targets
-.SECONDARY: $(OBJS)
 .PHONY: all debug clean fclean re
