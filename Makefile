@@ -54,8 +54,6 @@ TOTAL_SRCS			:= $(words $(SRCS))
 
 SHELL := /bin/bash
 
-SHELL := /bin/bash
-
 define PROGRESS
 	IDX=$$(( $$(cat $(LOCK_FILE) 2>/dev/null || echo 0) + 1 )); \
 	echo $$IDX > $(LOCK_FILE); \
@@ -131,7 +129,7 @@ debug: clean $(NAME)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ CLEAN TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-PADDING = $(shell $${NAME})
+PADDING = $(shell echo -n "$(NAME)" | wc -c)
 
 # Remove object files and build artifacts
 clean:
