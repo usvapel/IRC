@@ -27,6 +27,8 @@ struct clientDetails {
     }
 };
 
+const int port = 6767;
+
 #define MAX_EVENTS 10
 struct epoll_event ev, events[MAX_EVENTS];
 int                epollfd, nfds;
