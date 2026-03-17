@@ -1,8 +1,6 @@
+
 #include "irc.hpp"
 
-int main() {
-	std::cout << "hello world\n";
-	return 0;
 // Connect to UNIX-domain stream socket
 // nc -U /tmp/testsocket
 // irssi
