@@ -73,10 +73,17 @@ TOTAL_SRCS			:= $(words $(SRCS))
 LOCK_FILE			:= $(OBJ_DIR)/.build.lock
 PROGRESS_SENTINEL	:= $(OBJ_DIR)/.progress_reset
 
-GIT_HASH	:= $(shell git rev-parse --short HEAD)
-GIT_AUTHOR	:= $(shell git show --format="%an <%ae>" -s $(GIT_HASH))
-GIT_BRANCH	:= $(shell git rev-parse --abbrev-ref HEAD)
-GIT_TAG 	:= $(shell git rev-parse --abbrev-ref --tags)
+# git log variables
+GIT_HASH			:= $(shell git rev-parse --short HEAD)
+GIT_AUTHOR			:= $(shell git show --format="%an <%ae>" -s $(GIT_HASH))
+GIT_BRANCH			:= $(shell git rev-parse --abbrev-ref HEAD)
+GIT_TAG 			:= $(shell git rev-parse --abbrev-ref --tags)
+GIT_REMOTE_STATUS	:= $(shell git rev-list --left-right --count \
+						origin/$(GIT_BRANCH)...HEAD 2>/dev/null | \
+						awk '{print "↓"$$1" ↑"$$2}')
+GIT_COMMIT_COUNT	:= $(shell git rev-list --count HEAD)
+GIT_DATE        	:= $(shell git show -s --format="%cd" \
+						--date=format:"%Y-%m-%d %H:%M" HEAD)
 
 SHELL	:= /bin/bash
 
@@ -145,11 +152,12 @@ $(PROGRESS_SENTINEL): | $(OBJ_DIR)
 	@rm -rf $(LOCK_FILE)
 	@touch $@
 
+# git logs
 print-version:
 	@echo "$(BOLD)$(GIT_HEADER_COLOR)━━ Git Build Info ━━$(RESET)"
-	@echo "$(GIT_LABEL_COLOR)Branch:$(RESET)  $(GIT_BRANCH_COLOR)$(GIT_BRANCH)$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Branch:$(RESET)  $(GIT_BRANCH_COLOR)$(GIT_BRANCH)   $(GIT_REMOTE_STATUS)$(RESET)"
 	@echo "$(GIT_LABEL_COLOR)Author:$(RESET)  $(GIT_AUTHOR_COLOR)$(GIT_AUTHOR)$(RESET)"
-	@echo "$(GIT_LABEL_COLOR)Commit:$(RESET)  $(GIT_HASH_COLOR)$(GIT_HASH)$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Commit:$(RESET)  $(GIT_HASH_COLOR)$(GIT_HASH)  $(GIT_DATE)  ($(GIT_COMMIT_COUNT) commits)$(RESET)"
 	@echo "$(GIT_LABEL_COLOR)Tag:$(RESET)     $(GIT_TAG_COLOR)$(GIT_TAG)$(RESET)"
 
 debug: CXXFLAGS	+= $(DEBUG_FLAGS)
