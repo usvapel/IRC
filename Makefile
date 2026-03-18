@@ -27,19 +27,19 @@ MAKEFLAGS		+= -s
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ VISUAL STYLING ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-COLORS := $(shell tput colors 2>/dev/null || echo 0)
+COLORS		:= $(shell tput colors 2>/dev/null || echo 0)
 ifeq ($(shell [ $(COLORS) -ge 256 ] && echo yes),yes)
-GIT_HASH	:= $(shell tput setaf 39)
-GIT_AUTHOR	:= $(shell tput setaf 213)
-GIT_BRANCH	:= $(shell tput setaf 81)
-GIT_TAG		:= $(shell tput setaf 220)
-GIT_HEADER	:= $(shell tput setaf 45)
-GIT_LABEL	:= $(shell tput setaf 250)
+GIT_HASH_COLOR   := $(shell tput setaf 73)
+GIT_AUTHOR_COLOR := $(shell tput setaf 153)
+GIT_BRANCH_COLOR := $(shell tput setaf 150)
+GIT_TAG_COLOR    := $(shell tput setaf 179)
+GIT_HEADER_COLOR := $(shell tput setaf 67)
+GIT_LABEL_COLOR  := $(shell tput setaf 246)
 else
-GIT_HASH	:= $(shell tput setaf 4)
-GIT_AUTHOR	:= $(shell tput setaf 1)
-GIT_BRANCH	:= $(shell tput setaf 6)
-GIT_TAG		:= $(shell tput setaf 3)
+GIT_HASH		:= $(shell tput setaf 4)
+GIT_AUTHOR		:= $(shell tput setaf 5)
+GIT_BRANCH		:= $(shell tput setaf 6)
+GIT_TAG			:= $(shell tput setaf 3)
 endif
 
 # Terminal colors for build output
@@ -66,13 +66,15 @@ SRCS		:= \
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Derived build variables
-OBJS			:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
-TOTAL_SRCS		:= $(words $(SRCS))
-LOCK_FILE		:= $(OBJ_DIR)/.build.lock
-GIT_COMMIT		:= $(shell git rev-parse --short HEAD)
-GIT_AUTHOR_NAME	:= $(shell git show --format="%an <%ae>" -s $(GIT_COMMIT))
-GIT_BRANCH		:= $(shell git rev-parse --abbrev-ref HEAD)
-GIT_TAG_NAME 	:= $(shell git rev-parse --abbrev-ref --tags)
+OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
+TOTAL_SRCS			:= $(words $(SRCS))
+LOCK_FILE			:= $(OBJ_DIR)/.build.lock
+PROGRESS_SENTINEL	:= $(OBJ_DIR)/.progress_reset
+
+GIT_HASH	:= $(shell git rev-parse --short HEAD)
+GIT_AUTHOR	:= $(shell git show --format="%an <%ae>" -s $(GIT_HASH))
+GIT_BRANCH	:= $(shell git rev-parse --abbrev-ref HEAD)
+GIT_TAG 	:= $(shell git rev-parse --abbrev-ref --tags)
 
 SHELL	:= /bin/bash
 
@@ -108,7 +110,7 @@ endef
 
 .PHONY: all debug clean fclean re
 # Default target
-all: _reset_progress print-version $(NAME) 
+all: print-version $(NAME) 
 	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
 	else \
@@ -116,7 +118,6 @@ all: _reset_progress print-version $(NAME)
 		echo ">$(BOLD)$(GREEN) All components built successfully!$(RESET)"; \
 	fi
 
-# Main executable linking with dependency checking
 $(NAME): $(OBJS)
 	@printf "\n"
 	@echo ">$(BOLD)$(GREEN) Linking $(NAME)...$(RESET)"
@@ -124,34 +125,31 @@ $(NAME): $(OBJS)
 	@touch $(OBJ_DIR)/.built
 	@echo ">$(BOLD)$(GREEN) $(NAME) successfully linked!$(RESET)"
 
-.PHONY: _reset_progress
-_reset_progress:
-	@rm -f $(LOCK_FILE)
-
-$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR) $(DEP_DIR)
+$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR) $(DEP_DIR) $(PROGRESS_SENTINEL)
 	@( flock 9; $(PROGRESS) ) 9<>$(LOCK_FILE)
 	@$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@ $(INC)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ ADDITIONAL TARGETS ■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-# Directory creation and dependency management
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
-# Include auto-generated dependency files
 -include $(wildcard $(DEP_DIR)/*.d)
 
 $(DEP_DIR): | $(OBJ_DIR)
 	@mkdir -p $@
 
-print-version:
-	@echo "$(BOLD)$(GIT_HEADER)━━ Git Build Info ━━$(RESET)"
-	@echo "$(GIT_LABEL)Branch:$(RESET)  $(GIT_BRANCH)$(GIT_BRANCH_NAME)$(RESET)"
-	@echo "$(GIT_LABEL)Author:$(RESET)  $(GIT_AUTHOR)$(GIT_AUTHOR_NAME)$(RESET)"
-	@echo "$(GIT_LABEL)Commit:$(RESET)  $(GIT_HASH)$(GIT_COMMIT)$(RESET)"
-	@echo "$(GIT_LABEL)Tag:$(RESET)     $(GIT_TAG)$(GIT_TAG_NAME)$(RESET)"
+$(PROGRESS_SENTINEL): | $(OBJ_DIR)
+	@rm -rf $(LOCK_FILE)
+	@touch $@
 
-# Development and debugging build configuration
+print-version:
+	@echo "$(BOLD)$(GIT_HEADER_COLOR)━━ Git Build Info ━━$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Branch:$(RESET)  $(GIT_BRANCH_COLOR)$(GIT_BRANCH)$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Author:$(RESET)  $(GIT_AUTHOR_COLOR)$(GIT_AUTHOR)$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Commit:$(RESET)  $(GIT_HASH_COLOR)$(GIT_HASH)$(RESET)"
+	@echo "$(GIT_LABEL_COLOR)Tag:$(RESET)     $(GIT_TAG_COLOR)$(GIT_TAG)$(RESET)"
+
 debug: CXXFLAGS	+= $(DEBUG_FLAGS)
 debug: clean $(NAME)
 	@echo ">$(BOLD)$(CYAN)  Debug build completed!$(RESET)"
