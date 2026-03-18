@@ -30,14 +30,16 @@ MAKEFLAGS		+= -s
 COLORS := $(shell tput colors 2>/dev/null || echo 0)
 ifeq ($(shell [ $(COLORS) -ge 256 ] && echo yes),yes)
 GIT_HASH	:= $(shell tput setaf 39)
+GIT_AUTHOR	:= $(shell tput setaf 213)
 GIT_BRANCH	:= $(shell tput setaf 81)
 GIT_TAG		:= $(shell tput setaf 220)
 GIT_HEADER	:= $(shell tput setaf 45)
 GIT_LABEL	:= $(shell tput setaf 250)
 else
-GIT_HASH	:= $(shell tput setaf 4)  # blue
-GIT_BRANCH	:= $(shell tput setaf 6)  # cyan
-GIT_TAG		:= $(shell tput setaf 3)  # yellow
+GIT_HASH	:= $(shell tput setaf 4)
+GIT_AUTHOR	:= $(shell tput setaf 1)
+GIT_BRANCH	:= $(shell tput setaf 6)
+GIT_TAG		:= $(shell tput setaf 3)
 endif
 
 # Terminal colors for build output
@@ -64,11 +66,13 @@ SRCS		:= \
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Derived build variables
-OBJS		:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
-TOTAL_SRCS	:= $(words $(SRCS))
-LOCK_FILE	:= $(OBJ_DIR)/.build.lock
-GIT_COMMIT	:= $(shell git rev-parse --short HEAD)
-GIT_BRANCH	:= $(shell git rev-parse --abbrev-ref HEAD)
+OBJS			:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
+TOTAL_SRCS		:= $(words $(SRCS))
+LOCK_FILE		:= $(OBJ_DIR)/.build.lock
+GIT_COMMIT		:= $(shell git rev-parse --short HEAD)
+GIT_AUTHOR_NAME	:= $(shell git show --format="%an <%ae>" -s $(GIT_COMMIT))
+GIT_BRANCH		:= $(shell git rev-parse --abbrev-ref HEAD)
+GIT_TAG_NAME 	:= $(shell git rev-parse --abbrev-ref --tags)
 
 SHELL	:= /bin/bash
 
@@ -143,6 +147,7 @@ $(DEP_DIR): | $(OBJ_DIR)
 print-version:
 	@echo "$(BOLD)$(GIT_HEADER)━━ Git Build Info ━━$(RESET)"
 	@echo "$(GIT_LABEL)Branch:$(RESET)  $(GIT_BRANCH)$(GIT_BRANCH_NAME)$(RESET)"
+	@echo "$(GIT_LABEL)Author:$(RESET)  $(GIT_AUTHOR)$(GIT_AUTHOR_NAME)$(RESET)"
 	@echo "$(GIT_LABEL)Commit:$(RESET)  $(GIT_HASH)$(GIT_COMMIT)$(RESET)"
 	@echo "$(GIT_LABEL)Tag:$(RESET)     $(GIT_TAG)$(GIT_TAG_NAME)$(RESET)"
 
