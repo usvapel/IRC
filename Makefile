@@ -27,15 +27,29 @@ MAKEFLAGS		+= -s
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ VISUAL STYLING ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
+COLORS := $(shell tput colors 2>/dev/null || echo 0)
+ifeq ($(shell [ $(COLORS) -ge 256 ] && echo yes),yes)
+GIT_HASH	:= $(shell tput setaf 39)
+GIT_BRANCH	:= $(shell tput setaf 81)
+GIT_TAG		:= $(shell tput setaf 220)
+GIT_HEADER	:= $(shell tput setaf 45)
+GIT_LABEL	:= $(shell tput setaf 250)
+else
+GIT_HASH	:= $(shell tput setaf 4)  # blue
+GIT_BRANCH	:= $(shell tput setaf 6)  # cyan
+GIT_TAG		:= $(shell tput setaf 3)  # yellow
+endif
+
 # Terminal colors for build output
-BOLD			:= $(shell tput bold)
-GREEN			:= $(shell tput setaf 2)
-YELLOW			:= $(shell tput setaf 3)
-BLUE			:= $(shell tput setaf 4)
-MAGENTA			:= $(shell tput setaf 5)
-CYAN			:= $(shell tput setaf 6)
-WHITE			:= $(shell tput setaf 7)
-RESET			:= $(shell tput sgr0)
+BOLD		:= $(shell tput bold)
+RED			:= $(shell tput setaf 1)
+GREEN		:= $(shell tput setaf 2)
+YELLOW		:= $(shell tput setaf 3)
+BLUE		:= $(shell tput setaf 4)
+MAGENTA		:= $(shell tput setaf 5)
+CYAN		:= $(shell tput setaf 6)
+WHITE		:= $(shell tput setaf 7)
+RESET		:= $(shell tput sgr0)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SOURCE FILES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
@@ -50,9 +64,11 @@ SRCS		:= \
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Derived build variables
-OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
-TOTAL_SRCS			:= $(words $(SRCS))
-LOCK_FILE			:= $(OBJ_DIR)/.build.lock
+OBJS		:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
+TOTAL_SRCS	:= $(words $(SRCS))
+LOCK_FILE	:= $(OBJ_DIR)/.build.lock
+GIT_COMMIT	:= $(shell git rev-parse --short HEAD)
+GIT_BRANCH	:= $(shell git rev-parse --abbrev-ref HEAD)
 
 SHELL	:= /bin/bash
 
@@ -88,7 +104,7 @@ endef
 
 .PHONY: all debug clean fclean re
 # Default target
-all: _reset_progress $(NAME)
+all: _reset_progress print-version $(NAME) 
 	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
 	else \
@@ -123,6 +139,12 @@ $(OBJ_DIR):
 
 $(DEP_DIR): | $(OBJ_DIR)
 	@mkdir -p $@
+
+print-version:
+	@echo "$(BOLD)$(GIT_HEADER)━━ Git Build Info ━━$(RESET)"
+	@echo "$(GIT_LABEL)Branch:$(RESET)  $(GIT_BRANCH)$(GIT_BRANCH_NAME)$(RESET)"
+	@echo "$(GIT_LABEL)Commit:$(RESET)  $(GIT_HASH)$(GIT_COMMIT)$(RESET)"
+	@echo "$(GIT_LABEL)Tag:$(RESET)     $(GIT_TAG)$(GIT_TAG_NAME)$(RESET)"
 
 # Development and debugging build configuration
 debug: CXXFLAGS	+= $(DEBUG_FLAGS)
