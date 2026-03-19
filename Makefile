@@ -58,6 +58,8 @@ RESET		:= $(shell tput sgr0)
 SRCS_MAIN	:= \
 	main.cpp \
 	Logger.cpp \
+	Socket.cpp \
+
 
 # Combine all source files
 SRCS		:= \
@@ -110,7 +112,7 @@ endef
 
 .PHONY: all debug clean fclean re
 # Default target
-all: print-version $(NAME) 
+all: print-version $(NAME)
 	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
 	else \
