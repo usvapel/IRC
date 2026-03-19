@@ -40,7 +40,7 @@ class Socket {
      * @param int32_t fd
      * @return void
      */
-    static void makeNonBlocking(int32_t fd);
+    void makeNonBlocking(int32_t fd);
     /**
      * @brief return the contained fd
      *
