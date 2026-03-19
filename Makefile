@@ -58,6 +58,7 @@ RESET		:= $(shell tput sgr0)
 SRCS_MAIN	:= \
 	main.cpp \
 	Logger.cpp \
+	Socket.cpp \
 
 # Combine all source files
 SRCS		:= \
