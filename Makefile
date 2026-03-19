@@ -112,7 +112,6 @@ endef
 
 .PHONY: all debug clean fclean re
 # Default target
-
 all: print-version $(NAME)
 	@if [ ! -f $(OBJ_DIR)/.built ]; then \
 		echo ">$(BOLD)$(YELLOW) $(NAME) is already up to date.$(RESET)"; \
