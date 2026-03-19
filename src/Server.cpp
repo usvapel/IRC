@@ -3,8 +3,11 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <cstdint>
+
+#include "Socket.hpp"
 
 Server::Server(const int32_t port, const uint32_t backlogSize,
                const std::string &pwd)
@@ -50,22 +53,40 @@ void Server::start(void) {
   _events = new struct epoll_event[_backlogSize];
 }
 
-void Server::poll(void) {
+void Server::run(void) {
+  char buffer[1024];
   while (true) {
-    std::cout << "Polling for new connections\n";
+    std::cout << "Polling for new connections. Clients: ";
+    std::cout << _clients.size() << std::endl;
     _nfds = epoll_wait(_epollfd, _events, _backlogSize, 100);
     for (int i = 0; i < _nfds; ++i) {
       if (_events[i].data.fd == _listenSock) {
         int32_t connectionSocket =
             accept(_listenSock, (struct sockaddr *)&_address, &_addressLen);
+
+        // FIXME: Do we need to store this for later use?
+        struct epoll_event connectionPoll;
+        connectionPoll.events = EPOLLIN;
+        connectionPoll.data.fd = connectionSocket;
+
+        if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, connectionSocket,
+                      &connectionPoll) < 0)
+          std::cerr << "Failed to add connectiont to polling list\n";
+
         if (setNonBlocking(connectionSocket) < 0) {
           epoll_ctl(_epollfd, EPOLL_CTL_DEL, connectionSocket, _events);
           continue;
         }
         _clients.push_back(connectionSocket);
+      } else {
+        ssize_t received = recv(_clients[0], buffer, 1024, MSG_DONTWAIT);
+        if (received < 0)
+          std::cerr << "failed to receive\n";
+        send(_clients[0], "test", 5, 0);
+        std::cout << "received: " << received << std::endl;
+        std::cout << buffer;
       }
     }
-    std::cout << _clients.size() << std::endl;
   }
 }
 

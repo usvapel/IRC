@@ -30,7 +30,7 @@ int main(int ac, char **av) {
   try {
     Server server(std::stoi(av[1]), BACKLOG_SIZE, av[2]);
     server.start();
-    server.poll();
+    server.run();
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
     return (1);

@@ -27,7 +27,7 @@ class Server {
 
     // Polling
     struct epoll_event  _ev{};
-    struct epoll_event *_events;
+    struct epoll_event *_events{};
     int32_t             _epollfd = -1;
     int32_t             _nfds;
 
@@ -95,5 +95,5 @@ class Server {
      */
     bool passwordIsCorrect(const std::string &pwd);
 
-    void poll(void);
+    void run(void);
 };
