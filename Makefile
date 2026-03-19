@@ -162,10 +162,6 @@ $(OBJ_DIR):
 $(DEP_DIR): | $(OBJ_DIR)
 	@mkdir -p $@
 
-# $(PROGRESS_SENTINEL): | $(OBJ_DIR)
-# 	@rm -rf $(LOCK_FILE)
-	# @touch $@
-
 # git logs
 print-version:
 	@rm -rf $(LOCK_FILE)
