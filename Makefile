@@ -73,7 +73,7 @@ TEST_SRCS := \
     tests/test_main.cpp \
     tests/test_parser.cpp \
     src/Parser.cpp  \
-TEST_EXEC = test_runner
+TEST_EXEC := test_runner
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
