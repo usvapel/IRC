@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include "Logger.hpp"
+
 Server::Server(const int32_t port, const uint32_t backlogSize,
                const std::string &pwd)
     : _port(port), _backlogSize(backlogSize), _pwd(pwd) {
@@ -79,6 +81,20 @@ void Server::run(void) {
   }
 }
 
+void Server::handlePassword(Client *client, const Command &cmd) {
+  (void)client, (void)cmd;
+  LOG << "handling PASS command";
+}
+
+void Server::handleNickname(Client *client, const Command &cmd) {
+  (void)client, (void)cmd;
+  LOG << "handling NICK command";
+}
+
+void Server::handleUserJoin(Client *client, const Command &cmd) {
+  (void)client, (void)cmd;
+  LOG << "handling NICK command";
+}
 Server::~Server(void) {
   if (_epollFD != -1)
     close(_epollFD);

@@ -10,14 +10,18 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
+#include "Command.hpp"
 #include "Socket.hpp"
 
 #define BACKLOG_SIZE 1024
 #define RCVBUF_SIZE 65536
 #define SNDBUF_SIZE 65536
 #define POLL_TIME 1000
+
+class Client;
 
 class Server {
   private:
@@ -34,6 +38,16 @@ class Server {
 
     // Clients
     std::vector<Socket *> _clients;
+
+    // functionality
+    using Function = void (Server::*)(Client *, const Command &);
+    void handlePassword(Client *client, const Command &cmd);
+    void handleNickname(Client *client, const Command &cmd);
+    void handleUserJoin(Client *client, const Command &cmd);
+    inline static const std::unordered_map<std::string, Function> _functionMap =
+        {{"PASS", &Server::handlePassword},
+         {"NICK", &Server::handleNickname},
+         {"USER", &Server::handleUserJoin}};
 
     // Security
     const std::string _pwd;
