@@ -36,8 +36,10 @@ class Server {
     int32_t             _epollFD = -1;
     int32_t             _nEpollFDs;
 
-    // Clients
-    std::vector<Socket *> _clients;
+    /**
+     * @brief map of Client classes, each has its own Socket class
+     */
+    std::unordered_map<int, Client> _clientData;
 
     // functionality
     using Function = void (Server::*)(Client *, const Command &);
