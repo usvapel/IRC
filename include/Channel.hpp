@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,7 @@ class Channel {
     unsigned int _userLimit = 0;
     uint16_t     _channelFlags = 0;
 
-    std::vector<Channel::User> _users;
+    std::vector<std::unique_ptr<Channel::User>> _users;
 
   public:
     Channel(const Client &client, const std::string &name);
@@ -32,37 +33,32 @@ class Channel {
 
     class User {
       private:
-        const Client &_client;
+        const Client *_client = nullptr;
         bool          _isOperator = false;
 
       public:
+        User() = delete;
         User(const Client &client);
         User(const User &other);
+        User &operator&(const User &other);
         ~User();
 
-        User() = delete;
-        User &operator&(const User &other) = delete;
-
-        // FIXME: Use toggle or separate add and remove?
-        void toggleOperatorPrivilege(void);
-        // TODO: add operator privilege to user
-        void addOperatorPrivilege(void);
-        // TODO: remove operator privilege from user
-        void removeOperatorPrivilege(void);
+        const Client *getClient(void) const;
+        void          toggleOperatorPrivilege(void);
+        void          addOperatorPrivilege(void);
+        void          removeOperatorPrivilege(void);
     };
 
     enum class ChannelFlag : uint16_t {
-      // NOTE: Mandatory:
       INVITE_ONLY = 1,
       TOPIC_SET_BY_CHANOP_ONLY = 1 << 1,
       KEY_PROTECTED = 1 << 2,
       LIMITED_USER_COUNT = 1 << 3,
     };
 
-    // FIXME: Operator commands:
-    void addUser(const Client &client);
-
     // NOTE: Operator commands:
+    User &addUser(const Client &client);
+
     void kickUser(User &user);
 
     // TODO:4.3.2 Channel Invitation

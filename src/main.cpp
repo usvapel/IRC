@@ -7,7 +7,9 @@ int main(void) {
   Client  client2;
   Channel channel(client, "test");
   std::cout << channel.getUserCount() << std::endl;
-  channel.addUser(client2);
+  Channel::User test = channel.addUser(client2);
+  std::cout << channel.getUserCount() << std::endl;
+  channel.kickUser(test);
   std::cout << channel.getUserCount() << std::endl;
 
   return (0);
