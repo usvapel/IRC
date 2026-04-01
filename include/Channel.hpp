@@ -26,10 +26,12 @@ class Channel {
     // std::string _banExceptionMask = "";
 
   public:
-    Channel();
+    Channel(const Client &client, const std::string &name);
+    ~Channel();
+
+    Channel() = delete;
     Channel(const Channel &other) = delete;
     Channel &operator=(const Channel &other) = delete;
-    ~Channel();
 
     const std::string &getName(void) const;
     unsigned int       getUserCount(void) const;
@@ -40,10 +42,12 @@ class Channel {
         bool isOperator = false;
 
       public:
-        User();
+        User(const Client &client);
+        ~User();
+
+        User() = delete;
         User(const User &other) = delete;
         User &operator&(const User &other) = delete;
-        ~User();
 
         // FIXME: Use toggle or separate add and remove?
         // void togglePrivilege(const Privilege privilege);
@@ -70,6 +74,7 @@ class Channel {
       // SERVER_REOP_CHANNEL = 1 << 10,
     };
 
+    // FIXME: Operator commands:
     void addUser(Client &client);
 
     // NOTE: Operator commands:

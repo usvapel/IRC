@@ -1,8 +1,12 @@
 #include "Channel.hpp"
 
-Channel::Channel() {}
+Channel::Channel(const Client &client, const std::string &name) : _name(name) {}
 
 Channel::~Channel() {}
+
+void Channel::addUser(Client &client) {
+  _users.emplace_back(client);
+}
 
 const std::string &Channel::getName(void) const {
   return (_name);
@@ -26,5 +30,5 @@ bool Channel::isFlagOn(const ChannelFlag flag) {
 
 // NOTE: USER:
 
-Channel::User::User() {}
+Channel::User::User(const Client &client) {}
 Channel::User::~User() {}
