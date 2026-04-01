@@ -28,6 +28,12 @@ class Client {
      * @return bool Is there a full message in buffer
      */
     bool checkBuffer();
+    void set_nick() {
+      struct passwd *pw = getpwuid(getuid());
+      if (pw) {
+        _nickname = pw->pw_name;
+      }
+    }
 
     /**
      * @brief Extracts a message from the socketBuffer.
@@ -67,4 +73,9 @@ class Client {
     bool        _passwordOK;
     bool        _shouldClose;
     State       _state;
+    static Socket *_clientSocket;
+    std::string    _response;
+    std::string    _nickname;
+    std::string    _username;
+    std::string    _recv_buf;
 };
