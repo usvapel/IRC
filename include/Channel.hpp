@@ -59,3 +59,4 @@ class Channel {
     // I - set / remove an invitation mask to automatically override the
     // invite-only flag; };
     void toggleInvitationMaskToOverrideInviteOnlyFlag(void);
+};
