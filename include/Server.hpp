@@ -134,10 +134,6 @@ class Server {
      */
     bool passwordIsCorrect(const std::string &pwd);
 
-    std::string getNickname();
-
-    bool isRegistered();
-
     void processMessage(Client &client, std::optional<Command> const &cmd);
 
     void run(void);
