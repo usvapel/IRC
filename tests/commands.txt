@@ -1,0 +1,3 @@
+PASS hello
+NICK nik
+USER nraatika * 0 :Niklas Raatikainen

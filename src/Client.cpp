@@ -20,9 +20,12 @@ Client::Client()
 
 Client::~Client() {};
 
-bool Client::checkBuffer() {
-  bool response = _recvBuffer.find("\r\n") != std::string::npos;
-  return response;
+void Client::removeFromResponse(size_t bytes) {
+  if (bytes >= _responseBuffer.length()) {
+    _responseBuffer.clear();
+  } else {
+    _responseBuffer.erase(0, bytes);
+  }
 }
 
 void Client::appendToRecvBuffer(std::string const &input) {

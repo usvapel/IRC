@@ -22,20 +22,6 @@ class Client {
       REGISTERED,
     };
 
-    /**
-     * @brief Checks if the socketBuffer contains a full message terminated by
-     * "\r\n"
-     * @return bool Is there a full message in buffer
-     */
-    bool checkBuffer();
-
-    /**
-     * @brief Extracts a message from the socketBuffer.
-     *
-     * @return std::string The first full message contained in the socketBuffer.
-     */
-    std::string extractMessage();
-
     std::string getNickname();
     void        setNickname(std::string const &nick);
 
@@ -51,9 +37,17 @@ class Client {
     bool isRegistered();
     bool shouldClose();
 
+    /**
+     * @brief Extracts a message from the socketBuffer.
+     *
+     * @return std::string The first full message contained in the socketBuffer.
+     */
+    std::string extractMessage();
     void        appendToRecvBuffer(std::string const &input);
+
     void        appendToResponseBuffer(std::string const &msg);
     std::string getResponseBuffer();
+    void        removeFromResponse(size_t bytes);
 
     void setPasswordOK(bool b);
     bool isPasswordOK();
