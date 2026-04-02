@@ -1,5 +1,7 @@
 #include "Channel.hpp"
 
+#include <functional>
+#include <optional>
 #include <stdexcept>
 
 Channel::Channel(const Server &server, const Client &client,
@@ -44,12 +46,14 @@ Channel::User &Channel::addUser(const Client &client) {
   return (*_users.at(client.getNickname()));
 }
 
-Channel::User &Channel::findUser(const std::string &nickname) {
+std::optional<std::reference_wrapper<Channel::User>> Channel::findUser(
+    const std::string &nickname) {
   for (auto &[key, value] : _users) {
-    if (value->getNickName() == nickname)
-      return (*value);
+    if (value->getNickName() == nickname) {
+      return std::ref(*value);
+    }
   }
-  throw std::runtime_error("User " + nickname + " not found");
+  return std::nullopt;
 }
 
 void Channel::resetFlags(void) {
@@ -66,17 +70,18 @@ bool Channel::isFlagOn(const ChannelFlag flag) {
 
 // INFO: Operator commands:
 void Channel::kickUser(Channel::User &target) {
-  // FIXME: What else needs to be done when kicking?
+  // FIXME: What else needs to be done when kicking? Notify Client or Server?
 
-  std::erase_if(_users, [&](const auto &item) {
-    auto const &[nickname, user] = item;
-    return (target.getClient() == user->getClient());
-  });
+  auto it = _users.find(target.getNickName());
+  if (it != _users.end())
+    _users.erase(it);
 }
 
 void Channel::kickUser(const std::string nickname) {
-  User &target = findUser(nickname);
-  kickUser(target);
+  std::optional<std::reference_wrapper<User>> target = findUser(nickname);
+  if (target) {
+    kickUser(target.value().get());
+  }
 }
 
 void Channel::inviteUser(const std::string &nickname) {

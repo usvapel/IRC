@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -57,7 +59,9 @@ class Channel {
      * @return Returns a reference to the User if match found. Throws a
      * std::runtime_error if not found.
      */
-    User &findUser(const std::string &nickname);
+    std::optional<std::reference_wrapper<User>> findUser(
+        const std::string &nickname);
+    // User &findUser(const std::string &nickname);
 
     // INFO: Operator commands:
     /**
