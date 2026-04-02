@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Client.hpp"
@@ -148,7 +149,7 @@ class Channel {
     unsigned int  _userLimit = 0;
     uint16_t      _channelFlags = 0;
 
-    std::vector<std::unique_ptr<Channel::User>> _users;
+    std::unordered_map<std::string, std::unique_ptr<Channel::User>> _users;
 
   public:
     class User {

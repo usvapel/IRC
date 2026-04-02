@@ -7,7 +7,7 @@ Channel::Channel(const Server &server, const Client &client,
     : _server(server), _name(name) {
   User creator(client);
   creator.addOperatorPrivilege();
-  _users.push_back(std::make_unique<User>(creator));
+  _users.try_emplace(client.getNickname(), std::make_unique<User>(creator));
 }
 
 Channel::~Channel() {}
@@ -35,18 +35,19 @@ unsigned int Channel::getUserCount(void) const {
 
 // INFO: Utilities:
 Channel::User &Channel::addUser(const Client &client) {
-  for (const auto &e : _users) {
-    if (e->getClient() == &client)
-      throw std::runtime_error("User already exists");
+  for (const auto &[key, value] : _users) {
+    if (value->getClient() == &client)
+      // FIXME:: Inform operator that User already exists?
+      return (*value);
   }
-  _users.emplace_back(std::make_unique<User>(client));
-  return (*_users.back());
+  _users.try_emplace(client.getNickname(), std::make_unique<User>(client));
+  return (*_users.at(client.getNickname()));
 }
 
 Channel::User &Channel::findUser(const std::string &nickname) {
-  for (auto &e : _users) {
-    if (e->getNickName() == nickname)
-      return (*e);
+  for (auto &[key, value] : _users) {
+    if (value->getNickName() == nickname)
+      return (*value);
   }
   throw std::runtime_error("User " + nickname + " not found");
 }
@@ -66,8 +67,10 @@ bool Channel::isFlagOn(const ChannelFlag flag) {
 // INFO: Operator commands:
 void Channel::kickUser(Channel::User &target) {
   // FIXME: What else needs to be done when kicking?
-  std::erase_if(_users, [&](const std::unique_ptr<User> &userPtr) {
-    return (target.getClient() == userPtr->getClient());
+
+  std::erase_if(_users, [&](const auto &item) {
+    auto const &[nickname, user] = item;
+    return (target.getClient() == user->getClient());
   });
 }
 
