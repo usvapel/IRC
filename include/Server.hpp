@@ -43,24 +43,29 @@ class Server {
     /**
      * @brief map of Client classes, each has its own Socket class
      */
-    std::unordered_map<int, Client> _clients;
-    std::unordered_map<int, Socket> _sockets;
+    std::unordered_map<int32_t, Client> _clients;
+    std::unordered_map<int32_t, Socket> _sockets;
 
-    // INFO: Functionality
-    using Function = void (Server::*)(Client &, const Command &);
-    void handlePassword(Client &client, const Command &cmd);
-    void handleNickname(Client &client, const Command &cmd);
-    void handleUserJoin(Client &client, const Command &cmd);
-    void handleCapNegotiation(Client &client, const Command &cmd);
+    void modifyEpoll(int32_t fd, uint32_t events);
+
+    // functionality
+    using Function = void (Server::*)(int32_t, const Command &);
+    void handlePassword(int32_t fd, const Command &cmd);
+    void handleNickname(int32_t fd, const Command &cmd);
+    void handleUserJoin(int32_t fd, const Command &cmd);
+    void handleCapNegotiation(int32_t fd, const Command &cmd);
+    void handleQuit(int32_t fd, const Command &cmd);
     inline static const std::unordered_map<std::string, Function> _functionMap =
         {{"PASS", &Server::handlePassword},
          {"NICK", &Server::handleNickname},
          {"USER", &Server::handleUserJoin},
-         {"CAP", &Server::handleCapNegotiation}};
+         {"CAP", &Server::handleCapNegotiation},
+         {"QUIT", &Server::handleQuit}};
 
-    // INFO: Formulate responses
-    void replyMessage(Client &client, int code, std::string const &msg);
-    void sendWelcomeMessages(Client &client);
+    // formulate responses
+    void replyMessage(int32_t fd, std::string const &msg);
+    void replyNumeric(int32_t fd, int32_t code, std::string const &msg);
+    void sendWelcomeMessages(int32_t fd);
 
     bool isNicknameInUse(std::string const &nick);
 
@@ -134,7 +139,7 @@ class Server {
      */
     bool passwordIsCorrect(const std::string &pwd);
 
-    void processMessage(Client &client, std::optional<Command> const &cmd);
+    void processMessage(int32_t fd, std::optional<Command> const &cmd);
 
     void run(void);
 

@@ -1,5 +1,7 @@
 #include "Parser.hpp"
 
+#include <optional>
+
 std::optional<Command> Parser::parse(std::string message) {
   Command cmd;
 
