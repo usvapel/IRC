@@ -315,6 +315,13 @@ void Server::processMessage(int32_t fd, std::optional<Command> const &cmd) {
   }
 }
 
+void Server::sendMessageToUser(const std::string &nickname,
+                               const std::string &message) {}
+
+void Server::sendMessageWithCodeToUser(const std::string &nickname,
+                                       const int32_t      code,
+                                       const std::string &message) {}
+
 Server::~Server(void) {
   if (_epollFD != -1)
     close(_epollFD);
