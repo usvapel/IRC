@@ -1,13 +1,14 @@
 #include "Channel.hpp"
 
+#include <optional>
 #include <stdexcept>
 
 Channel::Channel(const Server &server, const Client &client,
                  const std::string &name)
     : _server(server), _name(name) {
-  User creator(client);
-  creator.addOperatorPrivilege();
-  _users.push_back(std::make_unique<User>(creator));
+  auto creator = std::make_unique<User>(client);
+  creator->addOperatorPrivilege();
+  _users.try_emplace(client.getNickname(), std::move(creator));
 }
 
 Channel::~Channel() {}
@@ -29,26 +30,49 @@ void Channel::setTopic(const std::string &topic) {
   _topic = topic;
 }
 
+void Channel::setUserLimit(const unsigned int limit) {
+  // if (_users.size() > limit)
+  // FIXME: How to handle this edge case?
+  // IRC server won't kick people out, but it won't allow new users to join.
+  _userLimit = limit;
+}
+
+unsigned int Channel::getUserLimit(void) const {
+  return (_userLimit);
+}
+
 unsigned int Channel::getUserCount(void) const {
   return (_users.size());
 }
 
 // INFO: Utilities:
-Channel::User &Channel::addUser(const Client &client) {
-  for (const auto &e : _users) {
-    if (e->getClient() == &client)
-      throw std::runtime_error("User already exists");
+std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
+    const Client &client) {
+  if (_users.size() >= _userLimit) {
+    // FIXME:: Inform operator that server is full?
+    std::cout << "Users: " << _users.size() << "\n";
+    std::cout << "User limit: " << _userLimit << "\n";
+    return (std::nullopt);
   }
-  _users.emplace_back(std::make_unique<User>(client));
-  return (*_users.back());
+  auto it = _users.find(client.getNickname());
+  if (it != _users.end()) {
+    // FIXME:: Inform operator that User already exists?
+    std::cout << "Can't add "
+              << (*it).first + " because they are already on the server\n";
+    return (*it->second);
+  }
+  _users.try_emplace(client.getNickname(), std::make_unique<User>(client));
+  return (*_users.at(client.getNickname()));
 }
 
-Channel::User &Channel::findUser(const std::string &nickname) {
-  for (auto &e : _users) {
-    if (e->getNickName() == nickname)
-      return (*e);
+std::optional<std::reference_wrapper<Channel::User>> Channel::findUser(
+    const std::string &nickname) {
+  auto it = _users.find(nickname);
+  if (it != _users.end()) {
+    return (std::ref(*(*it).second));
   }
-  throw std::runtime_error("User " + nickname + " not found");
+  std::cout << nickname + " not found on the server\n";
+  return std::nullopt;
 }
 
 void Channel::resetFlags(void) {
@@ -65,15 +89,21 @@ bool Channel::isFlagOn(const ChannelFlag flag) {
 
 // INFO: Operator commands:
 void Channel::kickUser(Channel::User &target) {
-  // FIXME: What else needs to be done when kicking?
-  std::erase_if(_users, [&](const std::unique_ptr<User> &userPtr) {
-    return (target.getClient() == userPtr->getClient());
-  });
+  // FIXME: What else needs to be done when kicking? Notify Client or Server?
+  auto it = _users.find(target.getNickName());
+  if (it != _users.end())
+    _users.erase(it);
 }
 
-void Channel::kickUser(const std::string nickname) {
-  User &target = findUser(nickname);
-  kickUser(target);
+void Channel::tryKickUser(const std::string nickname) {
+  std::optional<std::reference_wrapper<User>> target = findUser(nickname);
+  if (target) {
+    kickUser(target.value().get());
+    return;
+  }
+  // FIXME: Inform operator that user not found?
+  std::cout << "Can't kick "
+            << nickname + " because they are not found on the server\n";
 }
 
 void Channel::inviteUser(const std::string &nickname) {
@@ -93,8 +123,6 @@ Channel::User &Channel::User::operator&(const User &other) {
   _isOperator = other._isOperator;
   return (*this);
 }
-
-Channel::User::~User() {}
 
 const Client *Channel::User::getClient(void) const {
   return (_client);
