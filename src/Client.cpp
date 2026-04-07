@@ -20,9 +20,12 @@ Client::Client()
 
 Client::~Client() {};
 
-bool Client::checkBuffer() {
-  bool response = _recvBuffer.find("\r\n") != std::string::npos;
-  return response;
+void Client::removeFromResponse(size_t bytes) {
+  if (bytes >= _responseBuffer.length()) {
+    _responseBuffer.clear();
+  } else {
+    _responseBuffer.erase(0, bytes);
+  }
 }
 
 void Client::appendToRecvBuffer(std::string const &input) {
@@ -57,7 +60,7 @@ void Client::readSocket() {
 std::string Client::extractMessage() {
   auto stoppingPoint = _recvBuffer.find("\r\n");
   if (stoppingPoint != std::string::npos) {
-    std::string msg = _recvBuffer.substr(0, stoppingPoint + 2);
+    std::string msg = _recvBuffer.substr(0, stoppingPoint);
     _recvBuffer.erase(0, stoppingPoint + 2);
     return msg;
   } else {
@@ -67,6 +70,10 @@ std::string Client::extractMessage() {
 
 bool Client::shouldClose() {
   return _shouldClose;
+}
+
+void Client::setShouldClose(bool b) {
+  _shouldClose = b;
 }
 
 bool Client::isRegistered() {
@@ -121,8 +128,3 @@ const std::string &Client::getRealname() const {
 void Client::setRealname(std::string const &name) {
   _realname = name;
 }
-
-/**
- * @brief defining the static member to avoid linker errors
- */
-// Socket *Client::_clientSocket;
