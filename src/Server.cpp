@@ -301,8 +301,12 @@ void Server::processMessage(int32_t fd, std::optional<Command> const &cmd) {
       auto handler = it->second;
       (this->*handler)(fd, *cmd);
     } else {
-      replyNumeric(fd, Numeric::ERR_UNKNOWNCOMMAND,
-                   cmd->command + " :command not known");
+      if (!client.isRegistered()) {
+        replyNumeric(fd, Numeric::ERR_NOTREGISTERED, ":Client not registered");
+      } else {
+        replyNumeric(fd, Numeric::ERR_UNKNOWNCOMMAND,
+                     cmd->command + " :command not known");
+      }
     }
   } else {
     LOG << "Malformed message received from " << client.getNickname();
