@@ -11,12 +11,13 @@ DEBUG_FLAGS		:= -g3 -fsanitize=address -fsanitize=undefined -O0
 
 # Directory structure
 SRC_DIR			:= src
+TEST_DIR        := tests
 OBJ_DIR			:= obj
 DEP_DIR			:= $(OBJ_DIR)/.deps
 
 # Tell Make to look in $(SRC_DIR)
 # when resolving dependencies for %.o targets
-VPATH			:= $(SRC_DIR)
+VPATH			:= $(SRC_DIR):$(TEST_DIR)
 
 # Include paths
 INC				:= -I./include
@@ -55,8 +56,7 @@ RESET		:= $(shell tput sgr0)
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SOURCE FILES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
-SRCS_MAIN	:= \
-	main.cpp \
+SRCS_CORE	:= \
 	Logger.cpp \
 	Server.cpp \
 	Socket.cpp \
@@ -67,13 +67,12 @@ SRCS_MAIN	:= \
 
 # Combine all source files
 SRCS		:= \
-	$(SRCS_MAIN)
+	$(SRCS_CORE) \
+	main.cpp \
 
 # Source files needed for testing
 TEST_SRCS := \
-    tests/test_main.cpp \
-    tests/test_parser.cpp \
-    src/Parser.cpp  \
+   channel_test.cpp  \
 
 TEST_EXEC := test_runner
 
@@ -81,6 +80,8 @@ TEST_EXEC := test_runner
 
 # Derived build variables
 OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
+CORE_OBJS           := $(addprefix $(OBJ_DIR)/,$(SRCS_CORE:.cpp=.o))
+TEST_OBJS           := $(addprefix $(OBJ_DIR)/,$(TEST_SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
 LOCK_FILE			:= $(OBJ_DIR)/.build.lock
 
@@ -188,9 +189,13 @@ debug: CXXFLAGS	+= $(DEBUG_FLAGS)
 debug: clean $(NAME)
 	@echo ">$(BOLD)$(CYAN)  Debug build completed!$(RESET)"
 
-test:
-	@echo "Compiling tests..."
-	$(CXX) $(CXXFLAGS) $(TEST_SRCS) -o $(TEST_EXEC) $(INC)
+$(TEST_EXEC): $(CORE_OBJS) $(TEST_OBJS)
+	@printf "\n"
+	@echo ">$(BOLD)$(GREEN) Linking $(TEST_EXEC)...$(RESET)"
+	@$(CXX) $(CXXFLAGS) -o $(TEST_EXEC) $(CORE_OBJS) $(TEST_OBJS) $(INC)
+	@echo ">$(BOLD)$(GREEN) $(TEST_EXEC) successfully linked!$(RESET)"
+
+test: $(TEST_EXEC)
 	@echo "Running tests:\n"
 	./$(TEST_EXEC)
 
@@ -212,9 +217,9 @@ clean:
 
 # Complete cleanup including executables and external libraries
 fclean: clean
-	@if [ -f $(NAME) ]; then \
+	@if [ -f $(NAME) ] || [ -f $(TEST_EXEC) ]; then \
 		echo "> [ $(NAME) ] $(YELLOW) Removing $(NAME)...$(RESET)"; \
-		rm -f $(NAME); \
+		rm -f $(NAME) $(TEST_EXEC); \
 		printf "> [ %-$(PADDING)s ] %b %s removed!%b\n" "$(NAME)" "$(YELLOW)" \
 		"$(NAME)" "$(RESET)"; \
 	else \

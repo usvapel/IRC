@@ -5,4 +5,5 @@ obj
 compile_commands.json
 .marker
 irc
+test_runner
 *.log
