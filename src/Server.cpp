@@ -218,8 +218,8 @@ void Server::handleNickname(int32_t fd, const Command &cmd) {
       return;
     } else {
       client.setNickname(cmd.params[0]);
-      _nickToFd.try_emplace(client.getNickname(), clientFD);
-      _ client.setState(Client::State::NICK_RECEIVED);
+      _nickToFd.try_emplace(client.getNickname(), fd);
+      client.setState(Client::State::NICK_RECEIVED);
       if (client.isRegistered()) {
         sendWelcomeMessages(fd);
       }
@@ -320,22 +320,30 @@ void Server::processMessage(int32_t fd, std::optional<Command> const &cmd) {
 
 void Server::sendMessageToUser(const std::string &from, const std::string &to,
                                const std::string &message) {
-  std::unordered_map<std::string, int32_t> _nickToFd;
-  auto                                     it = _nickToFd.find(to);
+  auto it = _nickToFd.find(to);
   if (it != _nickToFd.end()) {
     replyMessage(it->second, message);
+  } else {
+    it = _nickToFd.find(from);
+    // FIXME: Format message correctly  "<client> <nickname> :No such
+    // nick/channel"
+    replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
   }
-  (void)from;
 }
 
 void Server::sendMessageWithCodeToUser(const std::string &from,
                                        const std::string &to,
                                        const int32_t      code,
                                        const std::string &message) {
-  (void)from;
-  (void)to;
-  (void)message;
-  (void)code;
+  auto it = _nickToFd.find(to);
+  if (it != _nickToFd.end()) {
+    replyNumeric(it->second, code, message);
+  } else {
+    it = _nickToFd.find(from);
+    // FIXME: Format message correctly  "<client> <nickname> :No such
+    // nick/channel"
+    replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
+  }
 }
 
 Server::~Server(void) {

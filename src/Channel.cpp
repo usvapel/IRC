@@ -3,8 +3,9 @@
 #include <optional>
 #include <stdexcept>
 
-Channel::Channel(const Server &server, const Client &client,
-                 const std::string &name)
+#include "Utils.hpp"
+
+Channel::Channel(Server &server, const Client &client, const std::string &name)
     : _server(server), _name(name) {
   auto creator = std::make_unique<User>(client);
   creator->addOperatorPrivilege();
@@ -50,6 +51,9 @@ std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
     const Client &client) {
   if (_users.size() >= _userLimit) {
     // FIXME:: Inform operator that server is full?
+    _server.sendMessageWithCodeToUser(
+        client.getNickname(), client.getNickname(), Numeric::ERR_CHANNELISFULL,
+        ":Cannot join channel (+l)");
     std::cout << "Users: " << _users.size() << "\n";
     std::cout << "User limit: " << _userLimit << "\n";
     return (std::nullopt);

@@ -24,8 +24,7 @@ class Channel {
      * @param client Client that creates the channel
      * @param name Name of the channel
      */
-    Channel(const Server &server, const Client &client,
-            const std::string &name);
+    Channel(Server &server, const Client &client, const std::string &name);
     ~Channel();
 
     Channel() = delete;
@@ -146,13 +145,13 @@ class Channel {
     void toggleChannelOperatorPrivilege(User &user);
 
   private:
-    const Server &_server;
-    std::string   _name = "";
-    std::string   _key = "";
-    std::string   _topic = "";
-    std::string   _invitationMask = "";
-    uint32_t      _userLimit = UINT32_MAX;
-    uint16_t      _channelFlags = 0;
+    Server     &_server;
+    std::string _name = "";
+    std::string _key = "";
+    std::string _topic = "";
+    std::string _invitationMask = "";
+    uint32_t    _userLimit = UINT32_MAX;
+    uint16_t    _channelFlags = 0;
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> _users;
 
