@@ -416,7 +416,7 @@ void Server::handlePrivMsg(int32_t fd, const Command &cmd) {
     return;
   }
   std::string message;
-  for (auto &it : cmd.params | std::views::drop(1))
+  for (auto &it : std::span(cmd.params).subspan(1))
     message += it;
   std::string nname(target->get().getNickname());
   try {
