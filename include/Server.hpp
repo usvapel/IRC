@@ -56,6 +56,7 @@ class Server {
     // functionality
     using Function = void (Server::*)(int32_t, const Command &);
     void handlePassword(int32_t fd, const Command &cmd);
+    void handleJoin(int32_t fd, const Command &cmd);
     void handleKick(int32_t fd, const Command &cmd);
     void handleNickname(int32_t fd, const Command &cmd);
     void handleUserJoin(int32_t fd, const Command &cmd);
@@ -63,6 +64,7 @@ class Server {
     void handleQuit(int32_t fd, const Command &cmd);
     inline static const std::unordered_map<std::string, Function> _functionMap =
         {{"PASS", &Server::handlePassword},
+         {"JOIN", &Server::handleJoin},
          {"KICK", &Server::handleKick},
          {"NICK", &Server::handleNickname},
          {"USER", &Server::handleUserJoin},

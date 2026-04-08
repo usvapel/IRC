@@ -47,6 +47,7 @@ unsigned int Channel::getUserCount(void) const {
 // INFO: Utilities:
 std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
     const Client &client) {
+  // FIXME: Need to implement password checks!
   if (_users.size() >= _userLimit) {
     _server.sendMessageWithCodeToUser(
         client.getNickname(), client.getNickname(), Numeric::ERR_CHANNELISFULL,
