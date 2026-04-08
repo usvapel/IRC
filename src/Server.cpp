@@ -5,6 +5,7 @@
 
 #include <cerrno>
 #include <cstdint>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -18,12 +19,6 @@
 #include "Logger.hpp"
 #include "Parser.hpp"
 #include "Utils.hpp"
-
-#define SERVER_NAME "usvaIRC"
-#include <cstring>
-
-#include "Client.hpp"
-#include "Logger.hpp"
 
 Server::Server(const int32_t port, const uint32_t backlogSize,
                const std::string &pwd)
@@ -267,9 +262,9 @@ void Server::handleUserJoin(int32_t fd, const Command &cmd) {
 }
 
 void Server::handleCapNegotiation(int32_t fd, const Command &cmd) {
-  (void)cmd;
   std::string capMsg = "CAP * LS :none\r\n";
-  replyMessage(fd, capMsg);
+  if (cmd.params.size() >= 1 && cmd.params[0] != "END")
+    replyMessage(fd, capMsg);
 }
 
 void Server::handleQuit(int fd, const Command &cmd) {

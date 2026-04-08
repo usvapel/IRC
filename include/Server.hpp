@@ -22,8 +22,8 @@
 #define BACKLOG_SIZE 1024
 #define RCVBUF_SIZE 65536
 #define SNDBUF_SIZE 65536
-
 #define POLL_TIME 1000
+#define SERVER_NAME "usvaIRC"
 
 class Client;
 class Channel;
@@ -79,7 +79,6 @@ class Server {
 
     // INFO: Security
     const std::string _pwd;
-    void              disconnectUser(int32_t fd);
 
   public:
     Server(void) = delete;

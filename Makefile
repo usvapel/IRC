@@ -58,12 +58,15 @@ RESET		:= $(shell tput sgr0)
 
 SRCS_CORE	:= \
 	Logger.cpp \
-	Server.cpp \
 	Socket.cpp \
 	Parser.cpp \
 	Client.cpp \
 	Utils.cpp \
 	Channel.cpp \
+	ServerCore.cpp \
+	ServerHandshake.cpp \
+	ServerReplies.cpp \
+	ServerHandlers.cpp \
 
 # Combine all source files
 SRCS		:= \
