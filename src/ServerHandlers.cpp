@@ -66,8 +66,8 @@ void Server::handlePrivMsg(int32_t fd, const Command &cmd) {
     std::string errStr =
         sender->get().getNickname() + " " + cmd.params[0] + " :No such nick";
     replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errStr);
+    return;
   }
-  return;
   std::string targetNick(target->get().getNickname());
   std::string fullMessage =
       prefix + " PRIVMSG " + targetNick + " :" + buffer + "\r\n";
