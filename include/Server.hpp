@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -61,6 +62,7 @@ class Server {
     void handleNickname(int32_t fd, const Command &cmd);
     void handleUserJoin(int32_t fd, const Command &cmd);
     void handleCapNegotiation(int32_t fd, const Command &cmd);
+    void handlePrivMsg(int32_t fd, const Command &cmd);
     void handleQuit(int32_t fd, const Command &cmd);
     inline static const std::unordered_map<std::string, Function> _functionMap =
         {{"PASS", &Server::handlePassword},
@@ -69,6 +71,7 @@ class Server {
          {"NICK", &Server::handleNickname},
          {"USER", &Server::handleUserJoin},
          {"CAP", &Server::handleCapNegotiation},
+         {"PRIVMSG", &Server::handlePrivMsg},
          {"QUIT", &Server::handleQuit}};
 
     // formulate responses

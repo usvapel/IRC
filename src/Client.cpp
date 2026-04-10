@@ -128,3 +128,11 @@ const std::string &Client::getRealname() const {
 void Client::setRealname(std::string const &name) {
   _realname = name;
 }
+
+const std::string &Client::getHostname() const {
+  return _hostname;
+}
+
+void Client::setHostname(std::string const &name) {
+  _hostname = name;
+}

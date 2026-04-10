@@ -143,6 +143,11 @@ class Channel {
     // The mode 'o' is used to toggle the operator status of a channel member.
     void toggleChannelOperatorPrivilege(User &user);
 
+    std::unordered_map<std::string, std::unique_ptr<Channel::User>> &
+    getUsers() {
+      return _users;
+    }
+
   private:
     Server     &_server;
     std::string _name = "";

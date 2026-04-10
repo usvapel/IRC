@@ -41,6 +41,9 @@ class Client {
     const std::string &getRealname() const;
     void               setRealname(std::string const &name);
 
+    const std::string &getHostname() const;
+    void               setHostname(std::string const &name);
+
     bool isRegistered();
     bool shouldClose();
     void setShouldClose(bool b);
@@ -59,6 +62,7 @@ class Client {
     std::string _nick;
     std::string _username;
     std::string _realname;
+    std::string _hostname;
     bool        _passwordOK;
     bool        _shouldClose;
     State       _state;
