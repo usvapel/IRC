@@ -90,6 +90,10 @@ void Server::handleJoin(int32_t fd, const Command &cmd) {
   Client         &client = _clients.at(fd);
   OptionalChannel channel = findChannel(cmd.params[0]);
   if (!channel) {
+    if (cmd.params[0][0] != '#' && cmd.params[0][0] != '&') {
+      replyNumeric(fd, Numeric::ERR_BADCHANMASK, ":" + cmd.params[0]);
+      return;
+    }
     std::cout << "channel not found, creating new channel " << cmd.params[0]
               << '\n';
     channel = newChannel(_clients.find(fd)->second, cmd.params[0]);
