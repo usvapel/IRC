@@ -141,3 +141,8 @@ const std::string &Client::getHostname() const {
 void Client::setHostname(std::string const &name) {
   _hostname = name;
 }
+
+const std::string Client::generatePrefix() const {
+  return (":" + this->getNickname() + "!~" + this->getUsername() + "@" +
+          this->getHostname());
+}

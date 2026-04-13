@@ -47,6 +47,8 @@ class Client {
     const std::string &getHostname() const;
     void               setHostname(std::string const &name);
 
+    const std::string generatePrefix() const;
+
     bool isRegistered();
     bool shouldClose();
     void setShouldClose(bool b);
