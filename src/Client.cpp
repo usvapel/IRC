@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 
 #include <cerrno>
@@ -9,13 +11,18 @@
 #include "Server.hpp"
 #include "irc.hpp"
 
-Client::Client()
+Client::Client(struct sockaddr_in *addr)
     : _responseBuffer(""),
       _recvBuffer(""),
       _nick(""),
       _passwordOK(false),
       _shouldClose(false),
-      _state(State::CONNECTED) {};
+      _state(State::CONNECTED) {
+  char ip[INET_ADDRSTRLEN] = {};
+  if (inet_ntop(AF_INET, &(addr->sin_addr), ip, sizeof(ip))) {
+    _hostname = ip;
+  }
+};
 
 Client::~Client() {};
 
