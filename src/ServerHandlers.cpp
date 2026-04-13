@@ -57,9 +57,7 @@ void Server::handlePrivMsg(int32_t fd, const Command &cmd) {
   OptionalClient sender = _clients.at(fd);
   if (!sender)
     return;
-  std::string prefix = ":" + sender->get().getNickname() + "!~" +
-                       sender->get().getUsername() + "@" +
-                       sender->get().getHostname();
+  std::string prefix = sender->get().generatePrefix();
   // INFO: channel
   if (cmd.params[0][0] == '#' || cmd.params[0][0] == '&') {
     OptionalChannel channel = findChannel(cmd.params[0]);
@@ -144,9 +142,7 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
   if (!client.has_value()) {
     return;
   }
-  std::string prefix = ":" + client->get().getNickname() + "!~" +
-                       client->get().getUsername() + "@" +
-                       client->get().getHostname();
+  std::string prefix = client->get().generatePrefix();
   for (auto &channel : channels) {
     OptionalUser optUser = channel->get().findUser(client->get().getNickname());
     if (!optUser.has_value()) {
