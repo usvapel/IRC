@@ -1,4 +1,5 @@
 #pragma once
+#include <netinet/in.h>
 #include <pwd.h>
 #include <unistd.h>
 
@@ -11,7 +12,8 @@
 
 class Client {
   public:
-    Client();
+    Client() = default;
+    Client(struct sockaddr_in *addr);
     Client(const Client &) = delete;
     Client &operator=(const Client &) = delete;
     Client(Client &&) = default;

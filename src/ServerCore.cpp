@@ -75,8 +75,11 @@ void Server::run(void) {
       // add new connections
       if (_epollEvents[i].data.fd == _listenSocket.getFD()) {
         while (true) {  // loop until accept() returns -1 and
-                        // errno is EAGAIN or EWOULDBLOCK
-          int32_t clientFD = accept(_listenSocket.getFD(), NULL, NULL);
+          // errno is EAGAIN or EWOULDBLOCK
+          struct sockaddr_in client_addr;
+          socklen_t          addr_len = sizeof(client_addr);
+          int32_t clientFD = accept(_listenSocket.getFD(),
+                                    (struct sockaddr *)&client_addr, &addr_len);
           if (clientFD == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
               break;
@@ -86,8 +89,7 @@ void Server::run(void) {
           } else {
             LOG << "New connection accepted on FD: " << clientFD;
             _sockets.try_emplace(clientFD, Socket::makeClientSocket(clientFD));
-            _clients.try_emplace(clientFD, Client());
-
+            _clients.try_emplace(clientFD, Client(&client_addr));
             struct epoll_event connectionPoll{};
             connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR;
             connectionPoll.data.fd = clientFD;
