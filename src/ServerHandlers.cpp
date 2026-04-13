@@ -136,17 +136,19 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
   if (channels.size() == 0) {
     return;
   }
-  std::string    nickname = _clients.at(fd).getNickname();
-  OptionalClient client = findClientByName(nickname);
+  auto it = _clients.find(fd);
+  if (it == _clients.end()) {
+    return;
+  }
+  OptionalClient client = it->second;
   if (!client.has_value()) {
     return;
   }
   std::string prefix = ":" + client->get().getNickname() + "!~" +
                        client->get().getUsername() + "@" +
                        client->get().getHostname();
-
   for (auto &channel : channels) {
-    OptionalUser optUser = channel->get().findUser(nickname);
+    OptionalUser optUser = channel->get().findUser(client->get().getNickname());
     if (!optUser.has_value()) {
       replyNumeric(fd, Numeric::ERR_NOTONCHANNEL,
                    ":You're not on that channel");
