@@ -66,7 +66,7 @@ void Server::handlePrivMsg(int32_t fd, const Command &cmd) {
       _channels.try_emplace(cmd.params[0], &channel->get());
     }
     std::string fullMessage =
-        prefix + " PRIVMSG " + cmd.params[0] + " :" + buffer + "\r\n";
+        prefix + " PRIVMSG " + cmd.params[0] + " :" + buffer;
     channel->get().messageAllUsersOnChannel(sender->get().getNickname(),
                                             fullMessage);
     return;
@@ -81,8 +81,7 @@ void Server::handlePrivMsg(int32_t fd, const Command &cmd) {
     return;
   }
   std::string targetNick(target->get().getNickname());
-  std::string fullMessage =
-      prefix + " PRIVMSG " + targetNick + " :" + buffer + "\r\n";
+  std::string fullMessage = prefix + " PRIVMSG " + targetNick + " :" + buffer;
   replyMessage(_nickToFd.at(targetNick), fullMessage);
 }
 
@@ -145,9 +144,9 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
     std::string partMessage =
         prefix + " " + cmd.command + " " + channel->get().getName();
     if (reason.size() > 0) {
-      partMessage += " :" + reason + "\r\n";
+      partMessage += " :" + reason;
     } else {
-      partMessage += " :Bye bye!\r\n";
+      partMessage += " :Bye bye!";
     }
     channel->get().messageAllUsersOnChannel(partMessage);
     channel->get().kickUser(optUser->get());
@@ -211,9 +210,9 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
     std::string kickMessage =
         cmd.command + " " + channel->get().getName() + " " + users[i];
     if (comment.empty() == false) {
-      kickMessage += " :" + comment + "\r\n";
+      kickMessage += " :" + comment;
     } else {
-      kickMessage += " :Bye bye!\r\n";
+      kickMessage += " :Bye bye!";
     }
     channel->get().messageAllUsersOnChannel(kickMessage);
     channel->get().kickUser(user->get());
@@ -275,16 +274,16 @@ void Server::handleJoin(int32_t fd, const Command &cmd) {
       LOG << channelNames[i] + " not found. Creating channel " +
                  channelNames[i];
       Channel    &createdChannel = newChannel(clientToAdd, channelNames[i]);
-      std::string channelMessage = ":" + clientToAdd.getNickname() + " JOIN " +
-                                   createdChannel.getName() + "\r\n";
+      std::string channelMessage =
+          ":" + clientToAdd.getNickname() + " JOIN " + createdChannel.getName();
       createdChannel.messageAllUsersOnChannel(channelMessage);
       continue;
     } else {
       LOG << channelNames[i] + " found. " + clientToAdd.getNickname() +
                  " joining the channel";
       // FIXME: Need to implement password checks!
-      std::string channelMessage = ":" + clientToAdd.getNickname() + " JOIN " +
-                                   channel->get().getName() + "\r\n";
+      std::string channelMessage =
+          ":" + clientToAdd.getNickname() + " JOIN " + channel->get().getName();
       channel->get().addUser(clientToAdd);
       channel->get().messageAllUsersOnChannel(channelMessage);
     }
@@ -298,7 +297,7 @@ void Server::handleQuit(int fd, const Command &cmd) {
     quitMsg = cmd.params[0];
   }
   Client     &client = _clients.at(fd);
-  std::string errorMsg = "ERROR :Closing Link: (Quit: " + quitMsg + ")\r\n";
+  std::string errorMsg = "ERROR :Closing Link: (Quit: " + quitMsg + ")";
   replyMessage(fd, errorMsg);
   client.setShouldClose(true);
   LOG << "Client " << fd << " initiated QUIT sequence.";

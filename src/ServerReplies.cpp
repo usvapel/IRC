@@ -7,7 +7,7 @@
 
 void Server::replyMessage(int32_t fd, std::string const &msg) {
   Client &client = _clients.at(fd);
-  client.appendToResponseBuffer(msg);
+  client.appendToResponseBuffer(msg + "\r\n");
   LOG << "sending message '" << msg << "' to client " << fd;
   modifyEpoll(fd, EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR);
 }
@@ -21,7 +21,7 @@ void Server::replyNumeric(int32_t fd, int32_t code, std::string const &msg) {
   if (target.empty() || !client.isRegistered())
     target = "*";
   message << target << " ";
-  message << msg << "\r\n";
+  message << msg;
   replyMessage(fd, message.str());
 }
 

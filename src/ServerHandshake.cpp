@@ -31,7 +31,7 @@ bool Server::isNicknameInUse(std::string const &nick) {
 }
 
 void Server::handleCapNegotiation(int32_t fd, const Command &cmd) {
-  std::string capMsg = "CAP * LS :none\r\n";
+  std::string capMsg = "CAP * LS :none";
   if (cmd.params.size() >= 1 && cmd.params[0] != "END")
     replyMessage(fd, capMsg);
 }
