@@ -15,7 +15,7 @@ void Server::sendWelcomeMessages(int32_t fd) {
                +":Welcome to the Internet Relay Network " + clientMask);
   replyNumeric(fd, Numeric::RPL_YOURHOST,
                std::string(":Your host is ") + SERVER_NAME +
-                   "running version " + GIT_HASH);
+                   " running version " + GIT_HASH);
   replyNumeric(fd, Numeric::RPL_CREATED, ":This Server was created today");
   replyNumeric(fd, Numeric::RPL_MYINFO,
                std::string(SERVER_NAME) + " " + GIT_HASH + " io itkol");
