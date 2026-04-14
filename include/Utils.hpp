@@ -38,4 +38,5 @@ constexpr int32_t ERR_PASSWDMISMATCH = 464;
 constexpr int32_t ERR_CHANNELISFULL = 471;
 constexpr int32_t ERR_BADCHANNELKEY = 475;
 constexpr int32_t ERR_BADCHANMASK = 476;
+constexpr int32_t ERR_CHANOPRIVSNEEDED = 482;
 }  // namespace Numeric
