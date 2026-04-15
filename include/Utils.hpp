@@ -18,6 +18,7 @@ constexpr int32_t RPL_UMODEIS = 221;
 constexpr int32_t RPL_NOTOPIC = 331;
 constexpr int32_t RPL_TOPIC = 332;
 constexpr int32_t RPL_TOPICWHOTIME = 333;
+constexpr int32_t RPL_INVITING = 341;
 constexpr int32_t RPL_NAMERPLY = 353;
 constexpr int32_t RPL_ENDOFNAMES = 366;
 // errors

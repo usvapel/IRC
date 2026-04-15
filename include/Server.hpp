@@ -75,6 +75,7 @@ class Server {
     void handleMsg(int32_t fd, const Command &cmd);
     void handlePrivMsg(int32_t fd, const Command &cmd);
     void handleTopic(int32_t fd, const Command &cmd);
+    void handleInvite(int32_t fd, const Command &cmd);
     void handleQuit(int32_t fd, const Command &cmd);
     void handlePing(int32_t fd, const Command &cmd);
     void handleMode(int32_t fd, const Command &cmd);
@@ -87,12 +88,13 @@ class Server {
             {"NICK", &Server::handleNickname},
             {"USER", &Server::handleUserJoin},
             {"CAP", &Server::handleCapNegotiation},
+            {"NOTICE", &Server::handleMsg},
             {"PRIVMSG", &Server::handleMsg},
+            {"TOPIC", &Server::handleTopic},
+            {"INVITE", &Server::handleInvite},
             {"QUIT", &Server::handleQuit},
             {"PING", &Server::handlePing},
             {"MODE", &Server::handleMode},
-            {"TOPIC", &Server::handleTopic},
-            {"NOTICE", &Server::handleMsg},
     };
 
     // formulate responses
