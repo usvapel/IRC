@@ -102,8 +102,6 @@ std::optional<std::reference_wrapper<Channel::User>> Channel::findUser(
   if (it != _users.end()) {
     return (std::ref(*(*it).second));
   }
-  // FIXME:: Print statements for debugging only
-  std::cout << nickname + " not found on the server\n";
   return std::nullopt;
 }
 

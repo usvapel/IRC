@@ -64,10 +64,10 @@ void Server::handleMsg(int32_t fd, const Command &cmd) {
   if (cmd.params[0][0] == '#' || cmd.params[0][0] == '&') {
     OptionalChannel channel = findChannel(cmd.params[0]);
     if (!channel) {
-      std::string errStr = sender->get().getNickname() + " " + cmd.params[0] +
+      std::string errStr = cmd.params[0] + " " + sender->get().getNickname() +
                            " :No such channel";
       if (privMsg) {
-        replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errStr);
+        replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL, errStr);
       }
       return;
     }
@@ -82,7 +82,7 @@ void Server::handleMsg(int32_t fd, const Command &cmd) {
   OptionalClient target = findClientByName(cmd.params[0]);
   if (!target) {
     std::string errStr =
-        sender->get().getNickname() + " " + cmd.params[0] + " :No such nick";
+        cmd.params[0] + " " + sender->get().getNickname() + " :No such nick";
     if (privMsg) {
       replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errStr);
     }
@@ -254,14 +254,16 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
   for (size_t i = 0; i < users.size(); ++i) {
     OptionalClient clientToKick = findClientByName(users[i]);
     if (!clientToKick.has_value()) {
-      replyNumeric(fd, Numeric::ERR_NOSUCHNICK, ":No such nick");
+      std::string sender = _clients.at(fd).getNickname();
+      std::string errorMessage = users[i] + " " + sender + " :No such nick";
+      replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errorMessage);
       continue;
     }
     OptionalUser user = channel->get().findUser(users[i]);
     if (!user.has_value()) {
-      replyNumeric(fd, Numeric::ERR_NOSUCHNICK,
-                   ":No such nick " + users[i] + " on channel " +
-                       channel->get().getName());
+      std::string errorMessage = users[i] + " " + channel->get().getName() +
+                                 " :They aren't on the channel";
+      replyNumeric(fd, Numeric::ERR_USERNOTINCHANNEL, errorMessage);
       continue;
     }
     std::string kickMessage =
