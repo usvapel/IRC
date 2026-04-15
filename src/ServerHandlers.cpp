@@ -182,6 +182,10 @@ void Server::handleInvite(int32_t fd, const Command &cmd) {
   std::string messageToSender = targetNick + " :" + channelName;
   replyNumeric(fd, Numeric::RPL_INVITING, messageToSender);
 
+  OptionalClient senderClient = findClientByName(senderNick);
+  std::string    prefix = senderClient->get().generatePrefix();
+  std::string    messageToTarget =
+      prefix + " INVITE " + targetNick + " :" + channelName;
   sendMessageToUser(senderNick, targetNick, messageToTarget);
   return;
 }
