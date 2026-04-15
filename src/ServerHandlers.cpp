@@ -64,8 +64,12 @@ void Server::handleMsg(int32_t fd, const Command &cmd) {
   if (cmd.params[0][0] == '#' || cmd.params[0][0] == '&') {
     OptionalChannel channel = findChannel(cmd.params[0]);
     if (!channel) {
-      channel = newChannel(*sender, cmd.params[0]);
-      _channels.try_emplace(cmd.params[0], &channel->get());
+      std::string errStr = sender->get().getNickname() + " " + cmd.params[0] +
+                           " :No such channel";
+      if (privMsg) {
+        replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errStr);
+      }
+      return;
     }
     std::string fullMessage = prefix + (privMsg ? " PRIVMSG " : " NOTICE ") +
                               cmd.params[0] + " :" + buffer;
