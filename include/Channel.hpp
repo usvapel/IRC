@@ -183,6 +183,14 @@ class Channel {
                                   const std::string &message,
                                   const int32_t      code);
 
+    /**
+     * @brief Sends a standardized message to all Users on a channel that
+     * clientToAdd is joining as a new user.
+     *
+     * @param clientToAdd Client being added as a new user.
+     */
+    void messageNewUserJoining(Client &clientToAdd);
+
   private:
     Server     &_server;
     std::string _name = "";
@@ -193,6 +201,21 @@ class Channel {
     uint16_t    _channelFlags = 0;
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> _users;
+
+    /**
+     *  @brief Creates and returns a string of users on a channel with a prefix
+     * of their highest membership prefix.
+     */
+    std::string userList(void) const;
+
+    /**
+     * @brief
+     *  @brief Creates and returns a string of users on a channel (excluding
+     * userToSkip) with a prefix of their highest membership prefix.
+     *
+     * @param userToSkip User not to be included in the list.
+     */
+    std::string userList(const User &userToSkip) const;
 
   public:
     class User {
@@ -221,6 +244,14 @@ class Channel {
          * @brief Removes user's operator privilege.
          */
         void removeOperatorPrivilege(void);
+
+        /**
+         * @brief Returns a boolean telling if the User is operator on the
+         * channel.
+         *
+         * @return True if user is operator. Otherwise false.
+         */
+        bool isOperator(void) const;
 
       private:
         const Client *_client = nullptr;

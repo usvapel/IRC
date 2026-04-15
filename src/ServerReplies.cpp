@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <iostream>
 
 #include "Client.hpp"
 #include "Logger.hpp"
@@ -34,9 +35,10 @@ void Server::sendMessageWithCodeToUser(const std::string &from,
     replyNumeric(it->second, code, message);
   } else {
     it = _nickToFd.find(from);
-    // FIXME: Format message correctly  "<client> <nickname> :No such
-    // nick/channel"
-    replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
+    if (it != _nickToFd.end())
+      // FIXME: Format message correctly  "<client> <nickname> :No such
+      // nick/channel"
+      replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
   }
 }
 
@@ -47,8 +49,9 @@ void Server::sendMessageToUser(const std::string &from, const std::string &to,
     replyMessage(it->second, message);
   } else {
     it = _nickToFd.find(from);
-    // FIXME: Format message correctly  "<client> <nickname> :No such
-    // nick/channel"
-    replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
+    if (it != _nickToFd.end())
+      // FIXME: Format message correctly  "<client> <nickname> :No such
+      // nick/channel"
+      replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, ":No such nick");
   }
 }

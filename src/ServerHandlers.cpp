@@ -263,29 +263,22 @@ void Server::handleJoin(int32_t fd, const Command &cmd) {
   Client &clientToAdd = _clients.at(fd);
   for (size_t i = 0; i < channelNames.size(); ++i) {
     OptionalChannel channel = findChannel(channelNames[i]);
-    LOG << clientToAdd.getNickname() + " trying to join channel " +
-               channelNames[i];
+    LOG << clientToAdd.getNickname() + " trying to join " + channelNames[i];
     if (!channel.has_value()) {
-      if (cmd.params[0][0] != '#' && cmd.params[0][0] != '&') {
+      if (channelNames[i][0] != '#' && channelNames[i][0] != '&') {
         LOG << channelNames[i] + " bad channel mask";
-        replyNumeric(fd, Numeric::ERR_BADCHANMASK, ":" + cmd.params[0]);
-        return;
+        replyNumeric(fd, Numeric::ERR_BADCHANMASK, ":" + channelNames[i]);
+        continue;
       }
-      LOG << channelNames[i] + " not found. Creating channel " +
-                 channelNames[i];
-      Channel    &createdChannel = newChannel(clientToAdd, channelNames[i]);
-      std::string channelMessage =
-          ":" + clientToAdd.getNickname() + " JOIN " + createdChannel.getName();
-      createdChannel.messageAllUsersOnChannel(channelMessage);
+      LOG << channelNames[i] + " not found. Creating channel";
+      Channel &createdChannel = newChannel(clientToAdd, channelNames[i]);
+      createdChannel.messageNewUserJoining(clientToAdd);
       continue;
     } else {
-      LOG << channelNames[i] + " found. " + clientToAdd.getNickname() +
-                 " joining the channel";
+      LOG << clientToAdd.getNickname() + " joining channel " + channelNames[i];
       // FIXME: Need to implement password checks!
-      std::string channelMessage =
-          ":" + clientToAdd.getNickname() + " JOIN " + channel->get().getName();
       channel->get().addUser(clientToAdd);
-      channel->get().messageAllUsersOnChannel(channelMessage);
+      channel->get().messageNewUserJoining(clientToAdd);
     }
   }
 }

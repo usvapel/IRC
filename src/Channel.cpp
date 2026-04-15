@@ -1,8 +1,10 @@
 #include "Channel.hpp"
 
 #include <cstdint>
+#include <functional>
 #include <string>
 
+#include "Client.hpp"
 #include "Logger.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
@@ -124,6 +126,40 @@ void Channel::messageAllUsersOnChannel(const std::string &sender,
   }
 }
 
+void Channel::messageNewUserJoining(Client &clientToAdd) {
+  const std::string &nick = clientToAdd.getNickname();
+  const std::string &channel = this->getName();
+
+  auto it = _users.find(nick);
+  if (it == _users.end())
+    return;
+  User       &user = *it->second;
+  std::string joinMessage = clientToAdd.generatePrefix() + " JOIN " + channel;
+  messageAllUsersOnChannel(joinMessage);
+  // FIXME: Change _topic.length() to a mode check?
+  if (_topic.length() > 0) {
+    std::string topicMessage = channel + " :" + this->getTopic();
+    _server.sendMessageWithCodeToUser(nick, nick, Numeric::RPL_TOPIC,
+                                      topicMessage);
+  }
+  // FIXME: Need to include other prefixes than operator?
+  std::string prefix;
+  if (user.isOperator()) {
+    prefix = "@";
+  } else {
+    prefix = "";
+  }
+  // FIXME: Change '=' to be handled dynamically if implementing secret channel
+  // or private channel.
+  std::string nameReply =
+      "= " + channel + " :" + prefix + nick + this->userList(user);
+  _server.sendMessageWithCodeToUser(nick, nick, Numeric::RPL_NAMERPLY,
+                                    nameReply);
+  std::string endOfNamesReply = channel + " :End of /NAMES list";
+  _server.sendMessageWithCodeToUser(nick, nick, Numeric::RPL_ENDOFNAMES,
+                                    endOfNamesReply);
+}
+
 void Channel::resetFlags(void) {
   _channelFlags = 0;
 }
@@ -158,6 +194,38 @@ void Channel::inviteUser(const std::string &nickname) {
   (void)nickname;
 }
 
+std::string Channel::userList(void) const {
+  std::string list;
+  for (auto it = _users.begin(); it != _users.end(); ++it) {
+    if (it != _users.begin()) {
+      list += " ";
+    }
+    if (it->second->isOperator()) {
+      list += "@" + it->first;
+    } else {
+      list += it->first;
+    }
+  }
+  return (list);
+}
+
+std::string Channel::userList(const User &userToSkip) const {
+  std::string list;
+  for (auto it = _users.begin(); it != _users.end(); ++it) {
+    if (it != _users.begin()) {
+      list += " ";
+    }
+    if (it->first == userToSkip.getNickName())
+      continue;
+    if (it->second->isOperator()) {
+      list += "@" + it->first;
+    } else {
+      list += it->first;
+    }
+  }
+  return (list);
+}
+
 // INFO: Channel::User:
 Channel::User::User(const Client &client) : _client(&client) {}
 
@@ -190,4 +258,8 @@ void Channel::User::addOperatorPrivilege(void) {
 
 void Channel::User::removeOperatorPrivilege(void) {
   _isOperator = false;
+}
+
+bool Channel::User::isOperator(void) const {
+  return (_isOperator);
 }
