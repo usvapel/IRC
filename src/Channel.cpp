@@ -35,14 +35,18 @@ void Channel::setTopic(const std::string &topic) {
   _topic = topic;
 }
 
-void Channel::setUserLimit(const unsigned int limit) {
+void Channel::setUserLimit(const uint32_t limit) {
   // if (_users.size() > limit)
   // FIXME: How to handle this edge case?
   // IRC server won't kick people out, but it won't allow new users to join.
   _userLimit = limit;
 }
 
-unsigned int Channel::getUserLimit(void) const {
+void Channel::setKey(const std::string &key) {
+  _key = key;
+}
+
+uint32_t Channel::getUserLimit(void) const {
   return (_userLimit);
 }
 
@@ -51,18 +55,25 @@ unsigned int Channel::getUserCount(void) const {
 }
 
 // INFO: Utilities:
-std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
-    const Client &client) {
-  // FIXME: Need to implement password checks!
+std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
+    const Client &client, const std::string &key) {
+  if (isFlagOn(ChannelFlag::KEY_PROTECTED)) {
+    if (key != _key) {
+      _server.sendMessageWithCodeToUser(
+          client.getNickname(), client.getNickname(),
+          Numeric::ERR_BADCHANNELKEY,
+          this->getName() + " :Cannot join channel (+k)");
+      LOG << client.getNickname() + " can't join channel " + this->getName() +
+                 " because keys don't match\n";
+      return (std::nullopt);
+    }
+  }
   if (_users.size() >= _userLimit) {
     _server.sendMessageWithCodeToUser(
         client.getNickname(), client.getNickname(), Numeric::ERR_CHANNELISFULL,
         this->getName() + " :Cannot join channel (+l)");
     LOG << client.getNickname() + " can't join channel " + this->getName() +
                " because it's full\n";
-    // FIXME:: Print statements for debugging only
-    std::cout << "Users: " << _users.size() << "\n";
-    std::cout << "User limit: " << _userLimit << "\n";
     return (std::nullopt);
   }
   auto it = _users.find(client.getNickname());
@@ -73,11 +84,13 @@ std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
             " :is already on channel");
     LOG << client.getNickname() + " is already on channel " + this->getName() +
                "\n";
-    // FIXME:: Print statements for debugging only
-    std::cout << "Can't add "
-              << (*it).first + " because they are already on the server\n";
     return (*it->second);
   }
+  return (addUser(client));
+}
+
+std::optional<std::reference_wrapper<Channel::User>> Channel::addUser(
+    const Client &client) {
   _users.try_emplace(client.getNickname(), std::make_unique<User>(client));
   return (*_users.at(client.getNickname()));
 }
@@ -224,6 +237,10 @@ std::string Channel::userList(const User &userToSkip) const {
     }
   }
   return (list);
+}
+
+bool Channel::keyIsCorrect(const std::string &key) const {
+  return (key == _key);
 }
 
 // INFO: Channel::User:

@@ -37,7 +37,18 @@ class Channel {
     void               setTopic(const std::string &topic);
     const std::string &getTopic(void) const;
 
-    unsigned int getUserLimit(void) const;
+    /**
+     * @brief Sets the channel key.
+     *
+     * @param key Key to be used on the channel.
+     */
+    void setKey(const std::string &key);
+
+    /**
+     * @brief Returns the user limit of channel.
+     */
+    uint32_t getUserLimit(void) const;
+
     // TODO: l - set / remove the user limit to channel;
     // 4.2.9 User Limit
     // A user limit may be set on channels by using the channel
@@ -45,21 +56,31 @@ class Channel {
     // users to join the channel. The value of the limit MUST only be made
     // available to the channel members in the reply sent by the server to a
     // MODE query.
-    void setUserLimit(const unsigned int limit);
 
+    /**
+     * @brief Sets the limit of simultaneous users on the channel.
+     *
+     * @param limit Number of maximum simultaneous users on the channel.
+     */
+    void setUserLimit(const uint32_t limit);
+
+    /**
+     * @brief Returns the current user count on the channel.
+     */
     unsigned int getUserCount(void) const;
 
     // INFO: Utilities:
+
     /**
-     * @brief Tries to add a ner User <client> to the channel _users vector. If
+     * @brief Tries to add a ner User <client> to the channel. If
      * succesful, returns a reference to this User. If the User already exists,
      * throws a std::runtime_error exception.
      *
-     * @param client Client based on which to create a new user.
-     * @return Returns a reference to the newly created User.
+     * @param client Client to be added.
+     * @param key Channel key.
      */
-    std::optional<std::reference_wrapper<Channel::User>> addUser(
-        const Client &client);
+    std::optional<std::reference_wrapper<Channel::User>> tryAddUser(
+        const Client &client, const std::string &key = "");
 
     /**
      * @brief Tries to find User with <nickname> from _users. Returns a
@@ -69,7 +90,6 @@ class Channel {
      */
     std::optional<std::reference_wrapper<User>> findUser(
         const std::string &nickname);
-    // User &findUser(const std::string &nickname);
 
     // INFO: Operator commands:
     /**
@@ -77,7 +97,6 @@ class Channel {
      *
      * @param user User to be kicked (removed) from the Server
      */
-    // FIXME: In definition. What else needs to be done when kicking?
     void kickUser(User &target);
 
     /**
@@ -92,12 +111,15 @@ class Channel {
     // (Invite Only Flag)), users whose address matches an invitation mask set
     // for the channel are allowed to join the channel without any invitation.
 
+    /**
+     * @brief Invites a client to the channel if it exists on the server.
+     *
+     * @param nickname Nickname of the client to be invited.
+     */
     void inviteUser(const std::string &nickname);
 
-    // void setMode(Mode mode);
-
     /**
-     * @brief Toggles a server.
+     * @brief Toggles a flag on the channel.
      *
      * @param flag Channel::ChannelFlag to be toggled.
      */
@@ -122,13 +144,13 @@ class Channel {
     // mask matches Invite-list (See section 4.3.2) or they have been invited by
     // a channel operator.  This flag also restricts the usage of the INVITE
     // command (See "IRC Client Protocol" [IRC-CLIENT]) to channel operators.
-    void toggleInviteOnly(void);
+    // void toggleInviteOnly(void);
 
     // TODO: t - toggle the topic settable by channel operator only flag;
     // 4.2.8 Topic
     // The channel flag 't' is used to restrict the usage of the
     // TOPIC command to channel operators.
-    void toggleTopicSettableByChanopOnly(void);
+    // void toggleTopicSettableByChanopOnly(void);
 
     // TODO: k - set / remove the channel       key(password);
     // 4.2.10 Channel Key
@@ -136,12 +158,12 @@ class Channel {
     // their local users request to join the channel unless this key is given.
     // The channel key MUST only be made visible to the channel members in the
     // reply sent by the server to a MODE query.
-    void toggleChannelKey(const std::string &key);
+    // void toggleChannelKey(void);
 
     // TODO: o - give / take channel   operator privilege;
     // 4.1.2 Channel Operator Status
     // The mode 'o' is used to toggle the operator status of a channel member.
-    void toggleChannelOperatorPrivilege(User &user);
+    // void toggleChannelOperatorPrivilege(User &user);
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> &
     getUsers() {
@@ -191,6 +213,8 @@ class Channel {
      */
     void messageNewUserJoining(Client &clientToAdd);
 
+    bool keyIsCorrect(const std::string &key) const;
+
   private:
     Server     &_server;
     std::string _name = "";
@@ -201,6 +225,17 @@ class Channel {
     uint16_t    _channelFlags = 0;
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> _users;
+
+    /**
+     * @brief Tries to add a ner User <client> to the channel _users vector. If
+     * succesful, returns a reference to this User. If the User already exists,
+     * throws a std::runtime_error exception.
+     *
+     * @param client Client based on which to create a new user.
+     * @return Returns a reference to the newly created User.
+     */
+    std::optional<std::reference_wrapper<Channel::User>> addUser(
+        const Client &client);
 
     /**
      *  @brief Creates and returns a string of users on a channel with a prefix

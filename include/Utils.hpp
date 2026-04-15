@@ -33,5 +33,6 @@ constexpr int32_t ERR_NEEDMOREPARAMS = 461;
 constexpr int32_t ERR_ALREADYREGISTRED = 462;
 constexpr int32_t ERR_PASSWDMISMATCH = 464;
 constexpr int32_t ERR_CHANNELISFULL = 471;
+constexpr int32_t ERR_BADCHANNELKEY = 475;
 constexpr int32_t ERR_BADCHANMASK = 476;
 }  // namespace Numeric
