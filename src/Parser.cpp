@@ -44,11 +44,15 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
       case 'o':
         if (index > modestring.size())
           continue;
+        if (index >= cmd.params.size())
+          continue;
         channel.findUser(cmd.params[index])->get().toggleOperatorPrivilege();
         index++;
         continue;
       case 'l':
         if (index > modestring.size() && onOff == true)
+          continue;
+        if (index >= cmd.params.size())
           continue;
         if (onOff == false) {
           channel.setUserLimit(UINT32_MAX);
