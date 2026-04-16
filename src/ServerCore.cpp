@@ -100,7 +100,7 @@ void Server::run(void) {
             _sockets.try_emplace(clientFD, Socket::makeClientSocket(clientFD));
             _clients.try_emplace(clientFD, Client(&client_addr));
             struct epoll_event connectionPoll{};
-            connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR;
+            connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLERR;
             connectionPoll.data.fd = clientFD;
             if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, clientFD, &connectionPoll) <
                 0) {
@@ -165,7 +165,7 @@ void Server::run(void) {
             if (client.shouldClose()) {
               removeClient(fd);
             } else {  // all data was sent, removed EPOLLOUT
-              modifyEpoll(fd, EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR);
+              modifyEpoll(fd, EPOLLIN | EPOLLHUP | EPOLLERR);
             }
           }
         }
@@ -259,7 +259,7 @@ void Server::startDisconnect(int32_t fd, std::string reason,
   }
   _nickToFd.erase(removed.getNickname());
   removed.setShouldClose(true);
-  modifyEpoll(fd, EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR);
+  modifyEpoll(fd, EPOLLOUT | EPOLLHUP | EPOLLERR);
   if (!socketExists) {
     removed.clearResponseBuffer();
   }
