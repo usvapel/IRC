@@ -451,8 +451,10 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
                    ":You're not channel operator");
       return;
     }
-    // FIXME: Parse mode message and apply to channel!
-    // Iterate through the parsed modes and use:
-    // channel->get().setMode(const ChannelMode mode, const bool status)
+    if (int32_t i = Parser::channelModeParse(cmd, channel->get()) != -1) {
+      replyNumeric(fd, Numeric::ERR_UNKNOWNMODE,
+                   std::string(1, cmd.params[1][i]));
+      return;
+    }
   }
 }
