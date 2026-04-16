@@ -58,7 +58,6 @@ std::string Channel::getModes(void) const {
   }
   if (isModeOn(ChannelMode::KEY_PROTECTED)) {
     modestring += "k";
-    modeArgs += " " + _key;
   }
   if (isModeOn(ChannelMode::TOPIC_SET_BY_CHANOP_ONLY)) {
     modestring += "t";
