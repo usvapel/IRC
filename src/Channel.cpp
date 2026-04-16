@@ -36,6 +36,14 @@ void Channel::setTopic(const std::string &topic) {
   _topic = topic;
 }
 
+std::string &Channel::getNewModes() {
+  return _newModes;
+}
+
+void Channel::setNewModes(const std::string &modes) {
+  _newModes = modes;
+}
+
 void Channel::setUserLimit(const uint32_t limit) {
   // if (_users.size() > limit)
   // FIXME: How to handle this edge case?

@@ -37,6 +37,8 @@ class Channel {
     void               setTopic(const std::string &topic);
     const std::string &getTopic(void) const;
 
+    std::string &getNewModes();
+    void         setNewModes(const std::string &modes);
     /**
      * @brief Sets the channel key.
      *
@@ -224,6 +226,7 @@ class Channel {
     std::string _invitationMask = "";
     uint32_t    _userLimit = UINT32_MAX;
     uint16_t    _channelModes = 0;
+    std::string _newModes = "";
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> _users;
 
