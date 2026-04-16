@@ -146,7 +146,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
 void Server::handleInvite(int32_t fd, const Command &cmd) {
   LOG << "handling INVITE command";
   if (cmd.params.size() < 2) {
-    replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS, "");
+    replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS, ":Not enough parameters");
     return;
   }
 
@@ -159,13 +159,14 @@ void Server::handleInvite(int32_t fd, const Command &cmd) {
   const std::string &senderNick = _clients.at(fd).getNickname();
   OptionalUser       senderUser = channel->get().findUser(senderNick);
   if (!senderUser) {
-    replyNumeric(fd, Numeric::ERR_NOTONCHANNEL, "");
+    replyNumeric(fd, Numeric::ERR_NOTONCHANNEL, "You're not on that channel");
     return;
   }
 
   if (channel->get().isFlagOn(Channel::ChannelFlag::INVITE_ONLY)) {
     if (!senderUser->get().isOperator()) {
-      replyNumeric(fd, Numeric::ERR_CHANOPRIVSNEEDED, "");
+      replyNumeric(fd, Numeric::ERR_CHANOPRIVSNEEDED,
+                   "You're not channel operator");
       return;
     }
   }
