@@ -458,5 +458,10 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
                    std::string(1, cmd.params[1][i]));
       return;
     }
+    std::string        newModes = channel->get().getNewModes();
+    const std::string &prefix = client.generatePrefix();
+    const std::string &modeMessage =
+        prefix + " MODE " + channelName + " :" + newModes;
+    channel->get().messageAllUsersOnChannel(modeMessage);
   }
 }
