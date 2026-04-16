@@ -2,6 +2,7 @@
 #include <sys/types.h>
 
 #include <cerrno>
+#include <chrono>
 #include <csignal>
 #include <cstdint>
 #include <cstring>
@@ -10,7 +11,9 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
+#include "Channel.hpp"
 #include "Client.hpp"
 #include "Logger.hpp"
 #include "Parser.hpp"
@@ -72,7 +75,9 @@ void Server::run(void) {
     _nEpollFDs = epoll_wait(_epollFD, _epollEvents, _backlogSize, POLL_TIME);
     for (int i = 0; i < _nEpollFDs; ++i) {
       // check for disconnected clients and remove them from the map
-      if (_epollEvents[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
+      if (_epollEvents[i].events & (EPOLLHUP | EPOLLERR)) {
+        std::string msg = "Unexpected connection loss";
+        startDisconnect(_epollEvents[i].data.fd, msg, false);
         removeClient(_epollEvents[i].data.fd);
         continue;
       }
@@ -82,8 +87,8 @@ void Server::run(void) {
           // errno is EAGAIN or EWOULDBLOCK
           struct sockaddr_in client_addr;
           socklen_t          addr_len = sizeof(client_addr);
-          int32_t            clientFD = accept(_listenSocket.getFD(),
-                                               (struct sockaddr *)&client_addr, &addr_len);
+          int32_t clientFD = accept(_listenSocket.getFD(),
+                                    (struct sockaddr *)&client_addr, &addr_len);
           if (clientFD == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
               break;
@@ -95,7 +100,7 @@ void Server::run(void) {
             _sockets.try_emplace(clientFD, Socket::makeClientSocket(clientFD));
             _clients.try_emplace(clientFD, Client(&client_addr));
             struct epoll_event connectionPoll{};
-            connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR;
+            connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLERR;
             connectionPoll.data.fd = clientFD;
             if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, clientFD, &connectionPoll) <
                 0) {
@@ -115,10 +120,7 @@ void Server::run(void) {
           epoll_ctl(_epollFD, EPOLL_CTL_DEL, _epollEvents[i].data.fd, NULL);
           continue;
         }
-        if (received <= 0) {
-          std::cerr << "failed to receive\n";
-          continue;
-        } else {
+        if (received > 0) {
           std::cout << "bytes: " << received << std::endl;
           LOG << "client " << _epollEvents[i].data.fd
               << " received: " << buffer;
@@ -139,6 +141,13 @@ void Server::run(void) {
           } else {
             std::cerr << "Got rogue network packet" << std::endl;
           }
+        } else if (received == 0) {
+          LOG << "Client " << _epollEvents[i].data.fd << " disconnected";
+          startDisconnect(_epollEvents[i].data.fd, "Client disconnected", true);
+        } else if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
+          LOG << "Fatal read error";
+          startDisconnect(_epollEvents[i].data.fd, "Read error", false);
+          removeClient(_epollEvents[i].data.fd);
         }
       } else if (_epollEvents[i].events & EPOLLOUT) {  // outgoing data
         int32_t     fd = _epollEvents[i].data.fd;
@@ -157,7 +166,7 @@ void Server::run(void) {
             if (client.shouldClose()) {
               removeClient(fd);
             } else {  // all data was sent, removed EPOLLOUT
-              modifyEpoll(fd, EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLERR);
+              modifyEpoll(fd, EPOLLIN | EPOLLHUP | EPOLLERR);
             }
           }
         }
@@ -199,6 +208,7 @@ void Server::modifyEpoll(int32_t fd, uint32_t events) {
 }
 
 void Server::removeClient(int32_t fd) {
+  LOG << "Removing client " << fd;
   epoll_ctl(_epollFD, EPOLL_CTL_DEL, fd, NULL);
   _clients.erase(fd);
   _sockets.erase(fd);
@@ -231,4 +241,26 @@ void Server::initializeSignalHandling(void) {
 void Server::signalHandler(const int sig) {
   LOG << "SIGINT (" << std::to_string(sig) << ") received";
   _sigintReceived = true;
+}
+
+void Server::startDisconnect(int32_t fd, std::string reason,
+                             bool socketExists) {
+  Client                  &removed = _clients.at(fd);
+  std::vector<std::string> channels = removed.getChannels();
+  std::string quitMsq = removed.generatePrefix() + " QUIT :Quit :" + reason;
+  for (auto channelName : channels) {
+    OptionalChannel chan = findChannel(channelName);
+    if (chan.has_value()) {
+      chan->get().messageAllUsersOnChannel(removed.getNickname(), quitMsq);
+      OptionalUser user = chan->get().findUser(removed.getNickname());
+      if (user.has_value())
+        chan->get().kickUser(*user);
+    }
+  }
+  _nickToFd.erase(removed.getNickname());
+  removed.setShouldClose(true);
+  modifyEpoll(fd, EPOLLOUT | EPOLLHUP | EPOLLERR);
+  if (!socketExists) {
+    removed.clearResponseBuffer();
+  }
 }

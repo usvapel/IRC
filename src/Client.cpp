@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <cstdlib>
 #include <string>
 
 #include "Channel.hpp"
@@ -50,6 +51,16 @@ void Client::appendToRecvBuffer(std::string const &input) {
 
 void Client::appendToResponseBuffer(std::string const &msg) {
   _responseBuffer.append(msg);
+  if (_responseBuffer.length() > MAX_RECV_BUFFER) {
+    _responseBuffer.clear();
+    LOG << "Client '" << _nick
+        << "' exceeded response buffer size, erased buffer";
+    _shouldClose = true;
+  }
+}
+
+void Client::clearResponseBuffer() {
+  _responseBuffer.clear();
 }
 
 std::string &Client::getResponseBuffer() {

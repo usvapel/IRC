@@ -9,6 +9,7 @@
 #include <vector>
 
 #define MAX_RECV_BUFFER 8192
+#define MAX_SEND_BUFFER 1048576
 #define MAX_MESSAGE_LEN 510
 
 class Client {
@@ -78,6 +79,7 @@ class Client {
 
     void         appendToRecvBuffer(std::string const &input);
     void         appendToResponseBuffer(std::string const &msg);
+    void         clearResponseBuffer();
     std::string &getResponseBuffer();
     void         removeFromResponse(size_t bytes);
 

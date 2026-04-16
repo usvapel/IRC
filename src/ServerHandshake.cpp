@@ -17,7 +17,7 @@ void Server::sendWelcomeMessages(int32_t fd) {
                    " running version " + GIT_HASH);
   replyNumeric(fd, Numeric::RPL_CREATED, ":This Server was created today");
   replyNumeric(fd, Numeric::RPL_MYINFO,
-               std::string(SERVER_NAME) + " " + GIT_HASH + " io itkol");
+               std::string(SERVER_NAME) + " " + GIT_HASH + " i itkol");
 }
 
 bool Server::isNicknameInUse(std::string const &nick) {

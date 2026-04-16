@@ -73,7 +73,6 @@ class Server {
     void handleUserJoin(int32_t fd, const Command &cmd);
     void handleCapNegotiation(int32_t fd, const Command &cmd);
     void handleMsg(int32_t fd, const Command &cmd);
-    void handlePrivMsg(int32_t fd, const Command &cmd);
     void handleTopic(int32_t fd, const Command &cmd);
     void handleInvite(int32_t fd, const Command &cmd);
     void handleQuit(int32_t fd, const Command &cmd);
@@ -231,4 +230,9 @@ class Server {
      * @brief removes a channel from server is it's user count is 0.
      */
     void removeEmptyChannels(void);
+
+    /**
+     * @brief starts the process of removing a client from the server.
+     */
+    void startDisconnect(int32_t fd, std::string reason, bool socketExists);
 };
