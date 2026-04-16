@@ -424,7 +424,7 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
   std::string nickname = client.getNickname();
 
   //  FIXME: vv Throw here only for development/debugging purposes vv
-  if (cmd.params.size() > 2) {
+  if (cmd.params.size() > 15) {
     throw std::runtime_error("Too many params for MODE command");
   }
   // FIXME: ^^ Throw here only for development/debugging purposes ^^
