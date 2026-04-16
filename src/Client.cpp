@@ -55,7 +55,7 @@ void Client::appendToResponseBuffer(std::string const &msg) {
     _responseBuffer.clear();
     LOG << "Client '" << _nick
         << "' exceeded response buffer size, erased buffer";
-    // FIXME: kick client at this point?
+    _shouldClose = true;
   }
 }
 
