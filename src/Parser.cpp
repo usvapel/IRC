@@ -1,7 +1,14 @@
 #include "Parser.hpp"
 
+#include <charconv>
+#include <cstdint>
+#include <iostream>
 #include <optional>
+#include <sstream>
 
+#include "Channel.hpp"
+#include "Server.hpp"
+#include "Utils.hpp"
 std::optional<Command> Parser::parse(std::string message) {
   Command cmd;
 

@@ -2,6 +2,7 @@
 #include <optional>
 #include <string>
 
+#include "Channel.hpp"
 #include "Command.hpp"
 
 /**

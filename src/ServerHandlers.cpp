@@ -9,6 +9,7 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "Logger.hpp"
+#include "Parser.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 
