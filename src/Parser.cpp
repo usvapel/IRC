@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 
 #include <charconv>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -11,9 +12,10 @@
 #include "Utils.hpp"
 
 int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
-  bool onOff = false;
-  int  it = 2;
-  for (auto &c : cmd.params[1]) {
+  bool               onOff = false;
+  size_t             index = 2;
+  const std::string &modestring = cmd.params[1];
+  for (auto &c : modestring) {
     switch (c) {
       case '+':
         onOff = true;
@@ -28,24 +30,34 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
         channel.setMode(Channel::ChannelMode::TOPIC_SET_BY_CHANOP_ONLY, onOff);
         continue;
       case 'k':
+        if (index >= modestring.size())
+          continue;
         channel.setMode(Channel::ChannelMode::KEY_PROTECTED, onOff);
-        channel.setKey(cmd.params[it]);
-        it++;
+        channel.setKey(cmd.params[index]);
+        index++;
         continue;
       case 'o':
-        channel.findUser(cmd.params[it])->get().toggleOperatorPrivilege();
-        it++;
+        if (index >= modestring.size())
+          continue;
+        channel.findUser(cmd.params[index])->get().toggleOperatorPrivilege();
+        index++;
         continue;
       case 'l':
+        if (index >= modestring.size() && onOff == true)
+          continue;
         channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, onOff);
+        if (onOff == false) {
+          channel.setUserLimit(UINT32_MAX);
+          continue;
+        }
         try {
           channel.setUserLimit(
-              static_cast<uint32_t>(std::stoul(cmd.params[it])));
+              static_cast<uint32_t>(std::stoul(cmd.params[index])));
         } catch (...) {}
-        it++;
+        index++;
         continue;
       default:
-        return it;
+        return index;
     }
   }
   return -1;
