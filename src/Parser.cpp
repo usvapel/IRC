@@ -15,29 +15,41 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
       case '+':
         onOff = true;
         continue;
+
       case '-':
         onOff = false;
         continue;
+
       case 'i':
         channel.setMode(Channel::ChannelMode::INVITE_ONLY, onOff);
         continue;
+
       case 't':
         channel.setMode(Channel::ChannelMode::TOPIC_SET_BY_CHANOP_ONLY, onOff);
         continue;
-      case 'k':
+
+      case 'k': {
         if (index >= cmd.params.size())
           continue;
         channel.setMode(Channel::ChannelMode::KEY_PROTECTED, onOff);
         channel.setKey(cmd.params[index]);
         index++;
         continue;
-      case 'o':
+      }
+
+      case 'o': {
         if (index >= cmd.params.size())
           continue;
-        channel.findUser(cmd.params[index])->get().toggleOperatorPrivilege();
+        OptionalUser user = channel.findUser(cmd.params[index]);
+        // FIXME: handle missing user some way?
+        if (!user)
+          continue;
+        user->get().toggleOperatorPrivilege();
         index++;
         continue;
-      case 'l':
+      }
+
+      case 'l': {
         if (!onOff) {
           channel.setUserLimit(UINT32_MAX);
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, false);
@@ -50,10 +62,12 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
         try {
           channel.setUserLimit(
               static_cast<uint32_t>(std::stoul(cmd.params[index])));
-          channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, onOff);
+          channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, true);
         } catch (...) {}
         index++;
         continue;
+      }
+
       default:
         return index;
     }
