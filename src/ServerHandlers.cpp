@@ -1,6 +1,5 @@
 #include <assert.h>
 
-#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <span>
@@ -364,8 +363,7 @@ void Server::handleQuit(int fd, const Command &cmd) {
 }
 
 void Server::handlePing(int32_t fd, const Command &cmd) {
-  Client &client = _clients.at(fd);
-  client.setPingRecv(std::chrono::system_clock::now());
+  Client     &client = _clients.at(fd);
   std::string msg = ":" SERVER_NAME " PONG " SERVER_NAME;
   if (!cmd.params.empty()) {
     msg += " " + cmd.params[0];

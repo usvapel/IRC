@@ -186,7 +186,6 @@ void Server::processMessage(int32_t fd, std::optional<Command> const &cmd) {
   if (cmd.has_value()) {
     auto it = _functionMap.find(cmd->command);
     if (it != _functionMap.end()) {
-      client.setLastMsgRecv(std::chrono::system_clock::now());
       auto handler = it->second;
       (this->*handler)(fd, *cmd);
     } else {
