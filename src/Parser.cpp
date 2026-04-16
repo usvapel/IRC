@@ -11,35 +11,31 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
   size_t             index = 2;
   std::string        onBuffer = "";
   std::string        offBuffer = "";
-  std::string        newModesBuffer = "";
   const std::string &modestring = cmd.params[1];
+
+  auto append = [&](char c) { (onOff ? onBuffer : offBuffer) += c; };
+
   for (auto &c : modestring) {
     switch (c) {
       case '+':
         onOff = true;
         onBuffer += '+';
-        continue;
+        break;
 
       case '-':
         onOff = false;
         offBuffer += '-';
-        continue;
+        break;
 
       case 'i':
-        if (!onOff)
-          offBuffer += 'i';
-        else
-          onBuffer += 'i';
+        append('i');
         channel.setMode(Channel::ChannelMode::INVITE_ONLY, onOff);
-        continue;
+        break;
 
       case 't':
-        if (!onOff)
-          offBuffer += 't';
-        else
-          onBuffer += 't';
+        append('t');
         channel.setMode(Channel::ChannelMode::TOPIC_SET_BY_CHANOP_ONLY, onOff);
-        continue;
+        break;
 
       case 'k': {
         if (!onOff) {
@@ -47,32 +43,30 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
             offBuffer += 'k';
           channel.setMode(Channel::ChannelMode::KEY_PROTECTED, false);
           channel.setKey("");
-          continue;
+          break;
         }
+
         if (index >= cmd.params.size())
-          continue;
+          break;
+
         channel.setMode(Channel::ChannelMode::KEY_PROTECTED, true);
-        channel.setKey(cmd.params[index]);
-        if (onOff)
-          onBuffer += 'k';
-        index++;
-        continue;
+        channel.setKey(cmd.params[index++]);
+        onBuffer += 'k';
+        break;
       }
 
       case 'o': {
         if (index >= cmd.params.size())
-          continue;
-        OptionalUser user = channel.findUser(cmd.params[index]);
+          break;
+
+        OptionalUser user = channel.findUser(cmd.params[index++]);
         // FIXME: handle missing user some way?
         if (!user)
-          continue;
+          break;
+
         user->get().toggleOperatorPrivilege();
-        if (!onOff)
-          offBuffer += 'o';
-        else
-          onBuffer += 'o';
-        index++;
-        continue;
+        append('o');
+        break;
       }
 
       case 'l': {
@@ -80,31 +74,38 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
           offBuffer += 'l';
           channel.setUserLimit(UINT32_MAX);
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, false);
-          continue;
+          break;
         }
+
         if (index >= cmd.params.size())
-          continue;
+          break;
+
         if (!std::ranges::all_of(cmd.params[index], ::isdigit))
-          continue;
+          break;
+
         try {
           channel.setUserLimit(
               static_cast<uint32_t>(std::stoul(cmd.params[index])));
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, true);
+          onBuffer += 'l';
         } catch (...) {}
-        onBuffer += 'l';
         index++;
-        continue;
+        break;
       }
 
       default:
         return index;
     }
   }
-  onBuffer.erase(std::unique(onBuffer.begin(), onBuffer.end()), onBuffer.end());
-  offBuffer.erase(std::unique(offBuffer.begin(), offBuffer.end()),
-                  offBuffer.end());
-  newModesBuffer += onBuffer + offBuffer;
-  channel.setNewModes(newModesBuffer);
+
+  auto dedupe = [](std::string &s) {
+    s.erase(std::unique(s.begin(), s.end()), s.end());
+  };
+
+  dedupe(onBuffer);
+  dedupe(offBuffer);
+
+  channel.setNewModes(onBuffer + offBuffer);
   return -1;
 }
 
