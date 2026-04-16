@@ -21,5 +21,7 @@ namespace Parser {
  * legal-looking IRC command (<:prefix> COMMAND <params>...), or std::nullopt if
  * no command was able to be found in the string
  */
+
+std::string           &channelModeParse(std::string message);
 std::optional<Command> parse(std::string message);
 }  // namespace Parser
