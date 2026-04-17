@@ -242,6 +242,13 @@ class Server {
     void removeEmptyChannels(void);
 
     /**
+     * @brief Tries to remove the given <channel> if it's empty.
+     *
+     * @param channel Name of the channel to be tried to remove.
+     */
+    void removeEmptyChannel(const std::string &channel);
+
+    /**
      * @brief starts the process of removing a client from the server.
      */
     void startDisconnect(int32_t fd, std::string reason, bool socketExists);

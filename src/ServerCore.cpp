@@ -73,7 +73,6 @@ void Server::run(void) {
     // LOG << "Polling for new connections. Clients: ";
     // LOG << _clients.size();
     TimeStamp now = std::chrono::system_clock::now();
-    removeEmptyChannels();
     _nEpollFDs = epoll_wait(_epollFD, _epollEvents, _backlogSize, POLL_TIME);
     for (int i = 0; i < _nEpollFDs; ++i) {
       // check for disconnected clients and remove them from the map
@@ -89,8 +88,8 @@ void Server::run(void) {
           // errno is EAGAIN or EWOULDBLOCK
           struct sockaddr_in client_addr;
           socklen_t          addr_len = sizeof(client_addr);
-          int32_t clientFD = accept(_listenSocket.getFD(),
-                                    (struct sockaddr *)&client_addr, &addr_len);
+          int32_t            clientFD = accept(_listenSocket.getFD(),
+                                               (struct sockaddr *)&client_addr, &addr_len);
           if (clientFD == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
               break;
@@ -175,7 +174,6 @@ void Server::run(void) {
       }
     }
     if (now - _lastPingCheck > std::chrono::seconds(5)) {
-      LOG << "Checking for inactive clients";
       pingInactiveClients(now);
       _lastPingCheck = now;
     }
@@ -259,9 +257,7 @@ void Server::startDisconnect(int32_t fd, std::string reason,
     OptionalChannel chan = findChannel(channelName);
     if (chan.has_value()) {
       chan->get().messageAllUsersOnChannel(removed.getNickname(), quitMsg);
-      OptionalUser user = chan->get().findUser(removed.getNickname());
-      if (user.has_value())
-        chan->get().kickUser(*user);
+      chan->get().tryKickUser(removed.getNickname());
     }
   }
   _nickToFd.erase(removed.getNickname());
