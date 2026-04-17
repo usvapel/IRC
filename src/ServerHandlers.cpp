@@ -138,7 +138,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                                channel->get().getName() + " :" + new_topic;
+                             channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
@@ -425,7 +425,7 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
   std::string nickname = client.getNickname();
 
   //  FIXME: vv Throw here only for development/debugging purposes vv
-  if (cmd.params.size() > 2) {
+  if (cmd.params.size() > 3) {
     throw std::runtime_error("Too many params for MODE command");
   }
   // FIXME: ^^ Throw here only for development/debugging purposes ^^
@@ -434,16 +434,20 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
     replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS, ":Not enough parameters");
     return;
   }
+  if (cmd.params[0][0] != '#' && cmd.params[0][0] != '&') {
+    return;
+  }
   OptionalChannel channel = findChannel(cmd.params[0]);
   if (!channel) {
     replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL, ":No such channel");
     return;
   }
   if (cmd.params.size() == 1) {
-    // FIXME: Format message correctly.
-    replyNumeric(fd, Numeric::RPL_CHANNELMODEIS, "");
-    // FIXME: Server's SHOULD return RPL_CREATIONTIME after RPL_CHANNELMODEIS
-    replyNumeric(fd, Numeric::RPL_CREATIONTIME, "");
+    replyNumeric(fd, Numeric::RPL_CHANNELMODEIS,
+                 channel->get().getName() + " " + channel->get().getModes());
+    replyNumeric(
+        fd, Numeric::RPL_CREATIONTIME,
+        channel->get().getName() + " " + channel->get().getUNIXTimeCreated());
     return;
   } else {
     OptionalUser user = channel->get().findUser(nickname);

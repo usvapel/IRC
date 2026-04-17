@@ -1,5 +1,7 @@
 #include "Channel.hpp"
 
+#include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -15,6 +17,10 @@ Channel::Channel(Server &server, const Client &client, const std::string &name)
   auto creator = std::make_unique<User>(client);
   creator->addOperatorPrivilege();
   _users.try_emplace(client.getNickname(), std::move(creator));
+  auto now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+  _timeCreated = std::to_string(seconds.count());
 }
 
 Channel::~Channel() {}
@@ -34,6 +40,29 @@ const std::string &Channel::getTopic(void) const {
 
 void Channel::setTopic(const std::string &topic) {
   _topic = topic;
+}
+
+const std::string &Channel::getUNIXTimeCreated(void) const {
+  return (_timeCreated);
+}
+
+std::string Channel::getModes(void) const {
+  std::string modestring = "+";
+  std::string modeArgs{};
+  if (isModeOn(ChannelMode::LIMITED_USER_COUNT)) {
+    modestring += "l";
+    modeArgs += " " + std::to_string(_userLimit);
+  }
+  if (isModeOn(ChannelMode::INVITE_ONLY)) {
+    modestring += "i";
+  }
+  if (isModeOn(ChannelMode::KEY_PROTECTED)) {
+    modestring += "k";
+  }
+  if (isModeOn(ChannelMode::TOPIC_SET_BY_CHANOP_ONLY)) {
+    modestring += "t";
+  }
+  return (modestring + modeArgs);
 }
 
 void Channel::setUserLimit(const uint32_t limit) {
@@ -192,7 +221,7 @@ void Channel::toggleMode(const ChannelMode flag) {
   _channelModes ^= static_cast<uint16_t>(flag);
 }
 
-bool Channel::isModeOn(const ChannelMode flag) {
+bool Channel::isModeOn(const ChannelMode flag) const {
   return (_channelModes & static_cast<uint16_t>(flag));
 }
 
