@@ -458,12 +458,10 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
                    ":You're not channel operator");
       return;
     }
-    if (int32_t i = Parser::channelModeParse(cmd, channel->get()) != -1) {
-      replyNumeric(fd, Numeric::ERR_UNKNOWNMODE,
-                   std::string(1, cmd.params[1][i]));
+    Parser::channelModeParse(cmd, channel->get(), *this, fd);
+    std::string newModes = channel->get().getNewModes();
+    if (newModes.empty())
       return;
-    }
-    std::string        newModes = channel->get().getNewModes();
     const std::string &prefix = client.generatePrefix();
     const std::string &modeMessage =
         prefix + " MODE " + channelName + " :" + newModes;
