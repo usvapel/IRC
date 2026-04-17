@@ -139,7 +139,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                             channel->get().getName() + " :" + new_topic;
+                                channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
@@ -410,14 +410,11 @@ void Server::handleQuit(int fd, const Command &cmd) {
 }
 
 void Server::handlePing(int32_t fd, const Command &cmd) {
-<<<<<<< HEAD
-=======
   Client &client = _clients.at(fd);
   if (cmd.command == "PONG") {
     client.setWaitingForPong(false);
     return;
   }
->>>>>>> notice-handler
   std::string msg = ":" SERVER_NAME " PONG " SERVER_NAME;
   if (!cmd.params.empty()) {
     msg += " " + cmd.params[0];

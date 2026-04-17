@@ -185,8 +185,6 @@ const std::string Client::generatePrefix() const {
   return (":" + this->getNickname() + "!" + this->getUsername() + "@" +
           this->getHostname());
 }
-<<<<<<< HEAD
-=======
 
 TimeStamp Client::getLastPingSent() {
   return _lastPingSent;
@@ -212,4 +210,3 @@ bool Client::isWaitingForPong() {
 void Client::setWaitingForPong(bool b) {
   _waitingForPong = b;
 }
->>>>>>> notice-handler
