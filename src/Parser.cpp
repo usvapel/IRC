@@ -13,6 +13,7 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
   size_t             index = 2;
   std::string        onBuffer = "";
   std::string        offBuffer = "";
+  std::string        argBuffer = " ";
   const std::string &modestring = cmd.params[1];
   Client            &client = server._clients.at(fd);
   const std::string &authorNick = client.getNickname();
@@ -63,15 +64,16 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
         if (index >= cmd.params.size())
           continue;
 
-        OptionalUser user = channel.findUser(cmd.params[index++]);
+        OptionalUser user = channel.findUser(cmd.params[index]);
         if (!user) {
           server.sendMessageWithCodeToUser(authorNick, authorNick,
                                            Numeric::ERR_NOSUCHNICK,
-                                           ":" + cmd.params[index - 1]);
+                                           ":" + cmd.params[index]);
           continue;
         }
 
         user->get().toggleOperatorPrivilege();
+        argBuffer += cmd.params[index++] + " ";
         append('o');
         continue;
       }
@@ -95,6 +97,7 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
               static_cast<uint32_t>(std::stoul(cmd.params[index])));
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, true);
           onBuffer += 'l';
+          argBuffer += cmd.params[index] + " ";
         } catch (...) {}
         index++;
         continue;
@@ -118,7 +121,7 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
   dedupe(onBuffer);
   dedupe(offBuffer);
 
-  channel.setNewModes(onBuffer + offBuffer);
+  channel.setNewModes(onBuffer + offBuffer + argBuffer);
 }
 
 std::optional<Command> Parser::parse(std::string message) {
