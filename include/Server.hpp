@@ -239,6 +239,7 @@ class Server {
     /**
      * @brief removes a channel from server is it's user count is 0.
      */
+    // FIXME: Not needed anymore?
     void removeEmptyChannels(void);
 
     /**
