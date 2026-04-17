@@ -175,7 +175,6 @@ void Server::run(void) {
       }
     }
     if (now - _lastPingCheck > std::chrono::seconds(5)) {
-      LOG << "Checking for inactive clients";
       pingInactiveClients(now);
       _lastPingCheck = now;
     }
@@ -194,6 +193,7 @@ void Server::processMessage(int32_t fd, std::optional<Command> const &cmd) {
   if (cmd.has_value()) {
     auto it = _functionMap.find(cmd->command);
     if (it != _functionMap.end()) {
+      client.setLastMsgRecv(std::chrono::system_clock::now());
       auto handler = it->second;
       (this->*handler)(fd, *cmd);
     } else {
