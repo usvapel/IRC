@@ -59,26 +59,26 @@ std::string Channel::getModes(const std::string &nickname) const {
   std::string  modestring = "+";
   std::string  modeArgs{};
   if (isModeOn(ChannelMode::LIMITED_USER_COUNT)) {
-    modestring += "l";
+    modestring.append("l");
     if (user) {
-      modeArgs += " " + std::to_string(_userLimit);
+      modeArgs.append(" ").append(std::to_string(_userLimit));
     }
   }
   if (isModeOn(ChannelMode::INVITE_ONLY)) {
-    modestring += "i";
+    modestring.append("i");
   }
   if (isModeOn(ChannelMode::KEY_PROTECTED)) {
-    modestring += "k";
+    modestring.append("k");
     if (user) {
       if (user->get().isOperator()) {
-        modeArgs += " " + _key;
+        modeArgs.append(" ").append(_key);
       } else {
-        modeArgs += " " + std::string(_key.length(), '*');
+        modeArgs.append(" ").append(_key.length(), '*');
       }
     }
   }
   if (isModeOn(ChannelMode::TOPIC_SET_BY_CHANOP_ONLY)) {
-    modestring += "t";
+    modestring.append("t");
   }
   return (modestring + modeArgs);
 }
