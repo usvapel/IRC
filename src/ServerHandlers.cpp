@@ -139,7 +139,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                             channel->get().getName() + " :" + new_topic;
+                                channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
@@ -405,15 +405,16 @@ void Server::handleQuit(int fd, const Command &cmd) {
   if (!cmd.params.empty()) {
     quitMsg = cmd.params[0];
   }
-  Client     &client = _clients.at(fd);
-  std::string errorMsg =
-      "ERROR :Closing Link: " + client.getHostname() + " (" + quitMsg + ")";
-  replyMessage(fd, errorMsg);
   startDisconnect(fd, quitMsg, true);
   LOG << "Client " << fd << " initiated QUIT sequence.";
 }
 
 void Server::handlePing(int32_t fd, const Command &cmd) {
+  Client &client = _clients.at(fd);
+  if (cmd.command == "PONG") {
+    client.setWaitingForPong(false);
+    return;
+  }
   std::string msg = ":" SERVER_NAME " PONG " SERVER_NAME;
   if (!cmd.params.empty()) {
     msg += " " + cmd.params[0];
