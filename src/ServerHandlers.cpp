@@ -405,15 +405,19 @@ void Server::handleQuit(int fd, const Command &cmd) {
   if (!cmd.params.empty()) {
     quitMsg = cmd.params[0];
   }
-  Client     &client = _clients.at(fd);
-  std::string errorMsg =
-      "ERROR :Closing Link: " + client.getHostname() + " (" + quitMsg + ")";
-  replyMessage(fd, errorMsg);
   startDisconnect(fd, quitMsg, true);
   LOG << "Client " << fd << " initiated QUIT sequence.";
 }
 
 void Server::handlePing(int32_t fd, const Command &cmd) {
+<<<<<<< HEAD
+=======
+  Client &client = _clients.at(fd);
+  if (cmd.command == "PONG") {
+    client.setWaitingForPong(false);
+    return;
+  }
+>>>>>>> notice-handler
   std::string msg = ":" SERVER_NAME " PONG " SERVER_NAME;
   if (!cmd.params.empty()) {
     msg += " " + cmd.params[0];

@@ -20,7 +20,10 @@ Client::Client(struct sockaddr_in *addr)
       _nick(""),
       _passwordOK(false),
       _shouldClose(false),
-      _state(State::CONNECTED) {
+      _waitingForPong(false),
+      _state(State::CONNECTED),
+      _lastMsgRecv(std::chrono::system_clock::now()),
+      _lastPingSent(std::chrono::system_clock::now()) {
   char ip[INET_ADDRSTRLEN] = {};
   if (inet_ntop(AF_INET, &(addr->sin_addr), ip, sizeof(ip))) {
     _hostname = ip;
@@ -182,3 +185,31 @@ const std::string Client::generatePrefix() const {
   return (":" + this->getNickname() + "!" + this->getUsername() + "@" +
           this->getHostname());
 }
+<<<<<<< HEAD
+=======
+
+TimeStamp Client::getLastPingSent() {
+  return _lastPingSent;
+}
+
+TimeStamp Client::getLastMsgRecv() {
+  return _lastMsgRecv;
+}
+
+void Client::setPingSent(TimeStamp t) {
+  setWaitingForPong(true);
+  _lastPingSent = t;
+}
+
+void Client::setLastMsgRecv(TimeStamp t) {
+  _lastMsgRecv = t;
+}
+
+bool Client::isWaitingForPong() {
+  return _waitingForPong;
+}
+
+void Client::setWaitingForPong(bool b) {
+  _waitingForPong = b;
+}
+>>>>>>> notice-handler
