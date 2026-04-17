@@ -1,9 +1,12 @@
 #pragma once
+#include <cstdint>
 #include <optional>
 #include <string>
 
-#include "Channel.hpp"
 #include "Command.hpp"
+
+class Server;
+class Channel;
 
 /**
  * @namespace Parser
@@ -23,6 +26,7 @@ namespace Parser {
  * no command was able to be found in the string
  */
 
-int32_t                channelModeParse(const Command &cmd, Channel &channel);
+void channelModeParse(const Command &cmd, Channel &channel, Server &server,
+                      int32_t fd);
 std::optional<Command> parse(std::string message);
 }  // namespace Parser
