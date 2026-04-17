@@ -33,6 +33,18 @@ std::optional<std::reference_wrapper<Channel>> Server::findChannel(
   return (std::nullopt);
 }
 
+void Server::removeEmptyChannel(const std::string &channel) {
+  auto it = _channels.find(channel);
+  if (it == _channels.end()) {
+    return;
+  }
+  Channel &channelRef = *it->second;
+  if (channelRef.getUserCount() == 0) {
+    LOG << "removing " + channel + "\n";
+    _channels.erase(it);
+  }
+}
+
 void Server::removeEmptyChannels(void) {
   std::vector<std::string> removedChannels;
   const int count = std::erase_if(_channels, [&](const auto &channel) {
@@ -139,7 +151,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                                channel->get().getName() + " :" + new_topic;
+                             channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
@@ -249,16 +261,16 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
                    ":You're not on that channel");
       continue;
     }
-    std::string partMessage =
-        prefix + " " + cmd.command + " " + channel->get().getName();
+    std::string channelName = channel->get().getName();
+    std::string partMessage = prefix + " " + cmd.command + " " + channelName;
     if (reason.size() > 0) {
       partMessage += " :" + reason;
     } else {
       partMessage += " :Bye bye!";
     }
     channel->get().messageAllUsersOnChannel(partMessage);
-    channel->get().kickUser(optUser->get());
-    client->get().removeChannel(channel->get().getName());
+    client->get().removeChannel(channelName);
+    channel->get().removeUser(client->get().getNickname());
   }
 }
 
@@ -318,16 +330,16 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
       replyNumeric(fd, Numeric::ERR_USERNOTINCHANNEL, errorMessage);
       continue;
     }
-    std::string kickMessage =
-        cmd.command + " " + channel->get().getName() + " " + users[i];
+    std::string channelName = channel->get().getName();
+    std::string kickMessage = cmd.command + " " + channelName + " " + users[i];
     if (comment.empty() == false) {
       kickMessage += " :" + comment;
     } else {
       kickMessage += " :Bye bye!";
     }
     channel->get().messageAllUsersOnChannel(kickMessage);
-    channel->get().kickUser(user->get());
-    clientToKick->get().removeChannel(channel->get().getName());
+    clientToKick->get().removeChannel(channelName);
+    channel->get().removeUser(users[i]);
   }
 }
 

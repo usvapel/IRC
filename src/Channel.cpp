@@ -84,9 +84,6 @@ std::string Channel::getModes(const std::string &nickname) const {
 }
 
 void Channel::setUserLimit(const uint32_t limit) {
-  // if (_users.size() > limit)
-  // FIXME: How to handle this edge case?
-  // IRC server won't kick people out, but it won't allow new users to join.
   _userLimit = limit;
 }
 
@@ -243,26 +240,14 @@ bool Channel::isModeOn(const ChannelMode flag) const {
   return (_channelModes & static_cast<uint16_t>(flag));
 }
 
-void Channel::tryKickUser(const std::string nickname) {
-  std::optional<std::reference_wrapper<User>> target = findUser(nickname);
-  if (target) {
-    kickUser(target.value().get());
-    return;
-  }
-  // FIXME: Inform operator that user not found?
-  std::cout << "Can't kick "
-            << nickname + " because they are not found on the server\n";
-}
-
-// INFO: Operator commands:
-void Channel::kickUser(Channel::User &target) {
-  auto it = _users.find(target.getNickName());
-  if (it != _users.end())
+void Channel::removeUser(const std::string nickname) {
+  auto it = _users.find(nickname);
+  if (it != _users.end()) {
     _users.erase(it);
-}
-
-void Channel::inviteUser(const std::string &nickname) {
-  (void)nickname;
+    if (_users.size() == 0) {
+      _server.removeEmptyChannel(_name);
+    }
+  }
 }
 
 std::string Channel::userList(void) const {

@@ -239,7 +239,15 @@ class Server {
     /**
      * @brief removes a channel from server is it's user count is 0.
      */
+    // FIXME: Not needed anymore?
     void removeEmptyChannels(void);
+
+    /**
+     * @brief Tries to remove the given <channel> if it's empty.
+     *
+     * @param channel Name of the channel to be tried to remove.
+     */
+    void removeEmptyChannel(const std::string &channel);
 
     /**
      * @brief starts the process of removing a client from the server.

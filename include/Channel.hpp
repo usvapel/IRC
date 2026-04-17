@@ -114,31 +114,13 @@ class Channel {
         const std::string &nickname) const;
 
     // INFO: Operator commands:
-    /**
-     * @brief Attempts to kick (remove) the given User from the Server.
-     *
-     * @param user User to be kicked (removed) from the Server
-     */
-    void kickUser(User &target);
 
     /**
-     * @brief Attempts to kick (remove) the given User from the Server.
+     * @brief Attempts to remove the given User from the Server.
      *
-     * @param nickname User to be kicked (removed) from the Server
+     * @param nickname User to be removed from the Server
      */
-    void tryKickUser(const std::string nickname);
-
-    // TODO:4.3.2 Channel Invitation
-    // For channels which have the invite-only flag set (See Section 4.2.2
-    // (Invite Only Flag)), users whose address matches an invitation mask set
-    // for the channel are allowed to join the channel without any invitation.
-
-    /**
-     * @brief Invites a client to the channel if it exists on the server.
-     *
-     * @param nickname Nickname of the client to be invited.
-     */
-    void inviteUser(const std::string &nickname);
+    void removeUser(const std::string nickname);
 
     /**
      * @brief Sets a channel <mode> on or off base on the given <status>
