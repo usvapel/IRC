@@ -1,17 +1,21 @@
 #include "Parser.hpp"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "Channel.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 
-int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
+void Parser::channelModeParse(const Command &cmd, Channel &channel,
+                              Server &server, int32_t fd) {
   bool               onOff = false;
   size_t             index = 2;
   std::string        onBuffer = "";
   std::string        offBuffer = "";
   const std::string &modestring = cmd.params[1];
+  Client            &client = server._clients.at(fd);
+  const std::string &authorNick = client.getNickname();
 
   auto append = [&](char c) { (onOff ? onBuffer : offBuffer) += c; };
 
@@ -20,22 +24,22 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
       case '+':
         onOff = true;
         onBuffer += '+';
-        break;
+        continue;
 
       case '-':
         onOff = false;
         offBuffer += '-';
-        break;
+        continue;
 
       case 'i':
         append('i');
         channel.setMode(Channel::ChannelMode::INVITE_ONLY, onOff);
-        break;
+        continue;
 
       case 't':
         append('t');
         channel.setMode(Channel::ChannelMode::TOPIC_SET_BY_CHANOP_ONLY, onOff);
-        break;
+        continue;
 
       case 'k': {
         if (!onOff) {
@@ -43,21 +47,21 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
             offBuffer += 'k';
           channel.setMode(Channel::ChannelMode::KEY_PROTECTED, false);
           channel.setKey("");
-          break;
+          continue;
         }
 
         if (index >= cmd.params.size())
-          break;
+          continue;
 
         channel.setMode(Channel::ChannelMode::KEY_PROTECTED, true);
         channel.setKey(cmd.params[index++]);
         onBuffer += 'k';
-        break;
+        continue;
       }
 
       case 'o': {
         if (index >= cmd.params.size())
-          break;
+          continue;
 
         OptionalUser user = channel.findUser(cmd.params[index++]);
         if (!user) {
@@ -70,7 +74,7 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
 
         user->get().toggleOperatorPrivilege();
         append('o');
-        break;
+        continue;
       }
 
       case 'l': {
@@ -78,14 +82,14 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
           offBuffer += 'l';
           channel.setUserLimit(UINT32_MAX);
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, false);
-          break;
+          continue;
         }
 
         if (index >= cmd.params.size())
-          break;
+          continue;
 
         if (!std::ranges::all_of(cmd.params[index], ::isdigit))
-          break;
+          continue;
 
         try {
           channel.setUserLimit(
@@ -94,12 +98,16 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
           onBuffer += 'l';
         } catch (...) {}
         index++;
-        break;
+        continue;
       }
 
       default:
-        return index;
+        server.sendMessageWithCodeToUser(authorNick, authorNick,
+                                         Numeric::ERR_UNKNOWNMODE,
+                                         &cmd.params[1][index]);
+        break;
     }
+    break;
   }
 
   auto dedupe = [](std::string &s) {
@@ -112,7 +120,6 @@ int32_t Parser::channelModeParse(const Command &cmd, Channel &channel) {
   dedupe(offBuffer);
 
   channel.setNewModes(onBuffer + offBuffer);
-  return -1;
 }
 
 std::optional<Command> Parser::parse(std::string message) {
