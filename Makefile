@@ -89,12 +89,12 @@ TOTAL_SRCS			:= $(words $(SRCS))
 LOCK_FILE			:= $(OBJ_DIR)/.build.lock
 
 ifeq ($(MAKELEVEL),0)
-    $(shell rm -f $(LOCK_FILE))
-    TOTAL_SRCS := $(shell $(MAKE) -n $(NAME) | grep -c "$(CXX).* -c")
-    export TOTAL_SRCS
+	$(shell rm -f $(LOCK_FILE))
+	TOTAL_SRCS := $(shell $(MAKE) -n $(NAME) | grep -c "$(CXX).* -c")
+	export TOTAL_SRCS
 endif
 ifeq ($(TOTAL_SRCS),0)
-    TOTAL_SRCS := 1
+	TOTAL_SRCS := 1
 endif
 
 # git log variables
