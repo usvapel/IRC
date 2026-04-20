@@ -1,7 +1,7 @@
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SETTINGS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Project configuration
-NAME			:= irc
+NAME			:= ircserv
 CXX				:= c++
 
 # Compiler flags
