@@ -4,6 +4,6 @@ obj
 .cache
 compile_commands.json
 .marker
-irc
+ircserv
 test_runner
 *.log
