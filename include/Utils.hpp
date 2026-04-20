@@ -1,6 +1,8 @@
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace Utils {
 bool validateNickname(const std::string &nick);

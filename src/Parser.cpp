@@ -1,7 +1,5 @@
 #include "Parser.hpp"
 
-#include <algorithm>
-#include <cstdint>
 
 #include "Channel.hpp"
 #include "Server.hpp"

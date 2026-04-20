@@ -4,16 +4,27 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <chrono>
 #include <csignal>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <functional>
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <optional>
+#include <span>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "Channel.hpp"
 #include "Client.hpp"

@@ -1,4 +1,3 @@
-#include <iostream>
 
 #include "Logger.hpp"
 #include "Server.hpp"

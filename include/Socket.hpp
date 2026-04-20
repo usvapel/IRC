@@ -1,9 +1,10 @@
 #pragma once
+#include <fcntl.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <unistd.h>
 
 #include <cstdint>
+#include <stdexcept>
 /**
  * @class Socket
  * @brief A wrapper around C POSIX API sockets

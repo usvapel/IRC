@@ -1,17 +1,8 @@
-#include <assert.h>
 
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <iostream>
-#include <span>
-#include <sstream>
-#include <string>
 
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "Logger.hpp"
-#include "Parser.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 
@@ -151,7 +142,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                                channel->get().getName() + " :" + new_topic;
+                             channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }

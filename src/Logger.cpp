@@ -1,12 +1,5 @@
 #include "Logger.hpp"
 
-#include <fcntl.h>
-
-#include <chrono>
-#include <filesystem>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 
 // static variable inits
 std::ofstream Logger::_logFile;

@@ -1,17 +1,3 @@
-#include <sys/epoll.h>
-#include <sys/types.h>
-
-#include <cerrno>
-#include <chrono>
-#include <csignal>
-#include <cstdint>
-#include <cstring>
-#include <iostream>
-#include <optional>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "Channel.hpp"
 #include "Client.hpp"
