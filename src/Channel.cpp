@@ -146,13 +146,18 @@ std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
 
 bool Channel::tryAddInvite(const User &senderUser, const std::string &invited) {
   std::string sender = senderUser.getNickName();
-  if (isModeOn(Channel::ChannelMode::INVITE_ONLY)) {
-    if (senderUser.isOperator() == false) {
-      _server.sendMessageWithCodeToUser(sender, sender,
-                                        Numeric::ERR_CHANOPRIVSNEEDED,
-                                        "You're not channel operator");
-      return (false);
-    }
+  if (senderUser.isOperator() == false) {
+    _server.sendMessageWithCodeToUser(sender, sender,
+                                      Numeric::ERR_CHANOPRIVSNEEDED,
+                                      "You're not channel operator");
+    return (false);
+  }
+  OptionalClient invitedClient = _server.findClientByName(invited);
+  if (!invitedClient) {
+    _server.sendMessageWithCodeToUser(
+        sender, sender, Numeric::ERR_NOSUCHNICK,
+        invited + " " + sender + " :No such nick");
+    return (false);
   }
   auto userIt = _users.find(invited);
   if (userIt != _users.end()) {

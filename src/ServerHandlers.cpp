@@ -115,14 +115,15 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
     return;
   }
 
-  OptionalChannel channel = findChannel(cmd.params[0]);
+  const std::string &nick = _clients.at(fd).getNickname();
+  OptionalChannel    channel = findChannel(cmd.params[0]);
   if (!channel) {
-    replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL, ":No such channel");
+    replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL,
+                 cmd.params[0] + " " + nick + ":No such channel");
     return;
   }
 
-  const std::string &nick = _clients.at(fd).getNickname();
-  OptionalUser       user = channel->get().findUser(nick);
+  OptionalUser user = channel->get().findUser(nick);
   if (!user) {
     replyNumeric(fd, Numeric::ERR_NOTONCHANNEL, ":You're not on that channel");
     return;
@@ -162,16 +163,17 @@ void Server::handleInvite(int32_t fd, const Command &cmd) {
     return;
   }
 
-  OptionalChannel channel = findChannel(cmd.params[1]);
+  const std::string &senderNick = _clients.at(fd).getNickname();
+  OptionalChannel    channel = findChannel(cmd.params[1]);
   if (!channel) {
-    replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL, ":" + cmd.params[1]);
+    replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL,
+                 cmd.params[1] + " " + senderNick + " :No such channel");
     return;
   }
 
-  const std::string &senderNick = _clients.at(fd).getNickname();
-  OptionalUser       senderUser = channel->get().findUser(senderNick);
+  OptionalUser senderUser = channel->get().findUser(senderNick);
   if (!senderUser) {
-    replyNumeric(fd, Numeric::ERR_NOTONCHANNEL, "You're not on that channel");
+    replyNumeric(fd, Numeric::ERR_NOTONCHANNEL, ":You're not on that channel");
     return;
   }
 
@@ -278,6 +280,7 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
     throw std::runtime_error("Too many params for KICK command");
   }
 
+  std::string              sender = _clients.at(fd).getNickname();
   OptionalChannel          channel;
   std::vector<std::string> users;
   std::string              comment;
@@ -286,8 +289,22 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
       case 0: {
         channel = findChannel(cmd.params[i]);
         if (!channel.has_value()) {
-          replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL, ":No such channel");
+          replyNumeric(fd, Numeric::ERR_NOSUCHCHANNEL,
+                       cmd.params[0] + " " + sender + " :No such channel");
           return;
+        } else {
+          OptionalUser senderUser = channel->get().findUser(sender);
+          if (!senderUser) {
+            replyNumeric(
+                fd, Numeric::ERR_NOTONCHANNEL,
+                sender + " " + cmd.params[0] + " :You're not on that channel");
+            return;
+          } else if (!senderUser->get().isOperator()) {
+            replyNumeric(
+                fd, Numeric::ERR_CHANOPRIVSNEEDED,
+                sender + " " + cmd.params[0] + " :You're not channel operator");
+            return;
+          }
         }
         break;
       }
@@ -305,10 +322,10 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
       }
     }
   }
+  std::string senderPrefix = _clients.at(fd).generatePrefix();
   for (size_t i = 0; i < users.size(); ++i) {
     OptionalClient clientToKick = findClientByName(users[i]);
     if (!clientToKick.has_value()) {
-      std::string sender = _clients.at(fd).getNickname();
       std::string errorMessage = users[i] + " " + sender + " :No such nick";
       replyNumeric(fd, Numeric::ERR_NOSUCHNICK, errorMessage);
       continue;
@@ -321,7 +338,8 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
       continue;
     }
     std::string channelName = channel->get().getName();
-    std::string kickMessage = cmd.command + " " + channelName + " " + users[i];
+    std::string kickMessage =
+        senderPrefix + " " + cmd.command + " " + channelName + " " + users[i];
     if (comment.empty() == false) {
       kickMessage += " :" + comment;
     } else {
