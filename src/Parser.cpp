@@ -11,16 +11,16 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
                               Server &server, int32_t fd) {
   bool               onOff = false;
   size_t             index = 2;
-  std::string        onBuffer = "";
-  std::string        offBuffer = "";
-  std::string        argBuffer = " ";
+  std::string        onBuffer;
+  std::string        offBuffer;
+  std::string        argBuffer(" ");
   const std::string &modestring = cmd.params[1];
   Client            &client = server._clients.at(fd);
   const std::string &authorNick = client.getNickname();
 
   auto append = [&](char c) { (onOff ? onBuffer : offBuffer) += c; };
 
-  for (auto &c : modestring) {
+  for (char c : modestring) {
     switch (c) {
       case '+':
         onOff = true;
@@ -73,7 +73,7 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
         }
 
         user->get().toggleOperatorPrivilege();
-        argBuffer += cmd.params[index++] + " ";
+        argBuffer.append(cmd.params[index++] + " ");
         append('o');
         continue;
       }
@@ -97,16 +97,16 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
               static_cast<uint32_t>(std::stoul(cmd.params[index])));
           channel.setMode(Channel::ChannelMode::LIMITED_USER_COUNT, true);
           onBuffer += 'l';
-          argBuffer += cmd.params[index] + " ";
+          argBuffer.append(cmd.params[index] + " ");
         } catch (...) {}
         index++;
         continue;
       }
 
       default:
+        std::string unknownMode(1, c);
         server.sendMessageWithCodeToUser(authorNick, authorNick,
-                                         Numeric::ERR_UNKNOWNMODE,
-                                         &cmd.params[1][index]);
+                                         Numeric::ERR_UNKNOWNMODE, unknownMode);
         break;
     }
     break;
@@ -114,7 +114,7 @@ void Parser::channelModeParse(const Command &cmd, Channel &channel,
 
   auto dedupe = [](std::string &s) {
     s.erase(std::unique(s.begin(), s.end()), s.end());
-    if ((s[0] == '+' || s[0] == '-') && !s[1])
+    if (s.size() == 1)
       s.clear();
   };
 
