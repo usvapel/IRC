@@ -1,7 +1,15 @@
 #include "Parser.hpp"
 
+#include <ctype.h>
+#include <stddef.h>
+
+#include <algorithm>
+#include <functional>
+#include <unordered_map>
+#include <vector>
 
 #include "Channel.hpp"
+#include "Client.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 

@@ -1,5 +1,7 @@
 #include "Utils.hpp"
 
+#include <algorithm>
+#include <vector>
 
 bool Utils::validateNickname(const std::string &nick) {
   const std::string forbidden = " ,*?!@";

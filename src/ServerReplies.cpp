@@ -1,3 +1,11 @@
+#include <stdint.h>
+#include <sys/epoll.h>
+
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "Client.hpp"
 #include "Logger.hpp"

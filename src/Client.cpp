@@ -1,5 +1,9 @@
 #include "Client.hpp"
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
 #include "Logger.hpp"
 #include "Server.hpp"
 

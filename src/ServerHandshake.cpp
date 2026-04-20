@@ -1,4 +1,12 @@
+#include <stdint.h>
+
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "Client.hpp"
+#include "Command.hpp"
 #include "Logger.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"

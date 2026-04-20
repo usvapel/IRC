@@ -1,5 +1,11 @@
 #include "Logger.hpp"
 
+#include <compare>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 
 // static variable inits
 std::ofstream Logger::_logFile;

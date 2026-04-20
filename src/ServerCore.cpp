@@ -1,9 +1,32 @@
+#include <errno.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <stdint.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <chrono>
+#include <compare>
+#include <cstring>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "Command.hpp"
 #include "Logger.hpp"
 #include "Parser.hpp"
 #include "Server.hpp"
+#include "Socket.hpp"
 #include "Utils.hpp"
 
 volatile sig_atomic_t Server::_sigintReceived = false;
@@ -61,8 +84,8 @@ void Server::run(void) {
         while (true) {
           struct sockaddr_in client_addr;
           socklen_t          addr_len = sizeof(client_addr);
-          int32_t clientFD = accept(_listenSocket.getFD(),
-                                    (struct sockaddr *)&client_addr, &addr_len);
+          int32_t            clientFD = accept(_listenSocket.getFD(),
+                                               (struct sockaddr *)&client_addr, &addr_len);
           if (clientFD == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
               break;
