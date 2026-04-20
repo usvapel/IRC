@@ -60,32 +60,19 @@ void Server::start(void) {
   _epollEvents = new struct epoll_event[_backlogSize];
 }
 
-// FIXME: Should we store client IP and port to a struct inside Socket *
-// (not NULL arguments in accept?)
-// int32_t clientFD = accept(_listener->getFD(),
-//                           (struct sockaddr *)&CLIENTADDRESS,
-//                           &CLIENTADDRESSLENGTH);
-// FIXME: Do we need to store connectionPoll struct for later use?
-// FIXME: What to do if adding clientSocket->getFD to polling fails?
-// FIXME: What to do if accept() fails?
 void Server::run(void) {
   while (_sigintReceived == false) {
-    // LOG << "Polling for new connections. Clients: ";
-    // LOG << _clients.size();
     TimeStamp now = std::chrono::steady_clock::now();
     _nEpollFDs = epoll_wait(_epollFD, _epollEvents, _backlogSize, POLL_TIME);
     for (int i = 0; i < _nEpollFDs; ++i) {
-      // check for disconnected clients and remove them from the map
       if (_epollEvents[i].events & (EPOLLHUP | EPOLLERR)) {
         std::string msg = "Unexpected connection loss";
         startDisconnect(_epollEvents[i].data.fd, msg, false);
         removeClient(_epollEvents[i].data.fd);
         continue;
       }
-      // add new connections
       if (_epollEvents[i].data.fd == _listenSocket.getFD()) {
-        while (true) {  // loop until accept() returns -1 and
-          // errno is EAGAIN or EWOULDBLOCK
+        while (true) {
           struct sockaddr_in client_addr;
           socklen_t          addr_len = sizeof(client_addr);
           int32_t clientFD = accept(_listenSocket.getFD(),
@@ -111,7 +98,7 @@ void Server::run(void) {
             }
           }
         }
-      } else if (_epollEvents[i].events & EPOLLIN) {  // incoming data
+      } else if (_epollEvents[i].events & EPOLLIN) {
         char    buffer[2048] = {};
         auto    it = _sockets.find(_epollEvents[i].data.fd);
         ssize_t received;
@@ -150,7 +137,7 @@ void Server::run(void) {
           startDisconnect(_epollEvents[i].data.fd, "Read error", false);
           removeClient(_epollEvents[i].data.fd);
         }
-      } else if (_epollEvents[i].events & EPOLLOUT) {  // outgoing data
+      } else if (_epollEvents[i].events & EPOLLOUT) {
         int32_t     fd = _epollEvents[i].data.fd;
         Client     &client = _clients.at(fd);
         std::string msg = client.getResponseBuffer();
@@ -166,7 +153,7 @@ void Server::run(void) {
           if (client.getResponseBuffer().empty()) {
             if (client.shouldClose()) {
               removeClient(fd);
-            } else {  // all data was sent, removed EPOLLOUT
+            } else {
               modifyEpoll(fd, EPOLLIN | EPOLLHUP | EPOLLERR);
             }
           }

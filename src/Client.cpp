@@ -4,15 +4,12 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
 #include <string>
 
-#include "Channel.hpp"
 #include "Logger.hpp"
 #include "Server.hpp"
-#include "irc.hpp"
 
 Client::Client(struct sockaddr_in *addr)
     : _responseBuffer(""),
@@ -69,23 +66,6 @@ void Client::clearResponseBuffer() {
 std::string &Client::getResponseBuffer() {
   return _responseBuffer;
 }
-
-/*
-void Client::readSocket() {
-  char    buffer[RCVBUF_SIZE] = {};
-  ssize_t bytesRead = _socket->receiveData(buffer, RCVBUF_SIZE);
-  if (bytesRead > 0) {
-    _recvBuffer.append(buffer, bytesRead);
-  } else if (bytesRead == 0) {
-    LOG << "Socket closing, fd: " << _socket->getFD();
-    _shouldClose = true;
-  } else {
-    if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
-      throw std::runtime_error("Error reading socket");
-    }
-  }
-}
-*/
 
 std::string Client::extractMessage() {
   auto stoppingPoint = _recvBuffer.find("\r\n");

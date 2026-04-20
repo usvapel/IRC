@@ -14,7 +14,6 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -22,14 +21,14 @@
 #include "Parser.hpp"
 #include "Socket.hpp"
 
-#define BACKLOG_SIZE 1024
-#define RCVBUF_SIZE 65536
-#define SNDBUF_SIZE 65536
-#define POLL_TIME 1000
-#define CLIENT_PING_START 40
-#define CLIENT_PING_INTERVAL 30
-#define CLIENT_TIMEOUT 100
-#define SERVER_NAME "usvaIRC"
+constexpr int         BACKLOG_SIZE = 1024;
+constexpr size_t      RCVBUF_SIZE = 65536;
+constexpr size_t      SNDBUF_SIZE = 65536;
+constexpr int         POLL_TIME = 1000;
+constexpr int         CLIENT_PING_START = 40;
+constexpr int         CLIENT_PING_INTERVAL = 30;
+constexpr int         CLIENT_TIMEOUT = 100;
+constexpr std::string SERVER_NAME = "usvaIRC";
 
 class Client;
 class Channel;
@@ -77,7 +76,6 @@ class Server {
      */
     void initializeSignalHandling(void);
 
-    // functionality
     using Function = void (Server::*)(int32_t, const Command &);
     void handlePassword(int32_t fd, const Command &cmd);
     void handleJoin(int32_t fd, const Command &cmd);
@@ -120,8 +118,6 @@ class Server {
 
     static void signalHandler(const int sig);
 
-    // INFO: Channels:
-    // std::vector<std::unique_ptr<Channel>>                     _channels;
     std::unordered_map<std::string, std::unique_ptr<Channel>> _channels;
 
     // INFO: Security
@@ -239,7 +235,6 @@ class Server {
     /**
      * @brief removes a channel from server is it's user count is 0.
      */
-    // FIXME: Not needed anymore?
     void removeEmptyChannels(void);
 
     /**
@@ -258,6 +253,8 @@ class Server {
      * @brief Loops through all clients, sends PING to those who have been
      * inactive longer than CLIENT_PING_INTERVAL seconds, and starts the removal
      * of those that have been inactive for longer than CLIENT_TIMEOUT seconds.
+     *
+     * @param TimeStamp now, a time_point of when the function was called
      */
     void pingInactiveClients(TimeStamp now);
 };

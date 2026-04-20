@@ -19,6 +19,12 @@ class Logger {
       _oss << msg;
       return *this;
     }
+    /**
+     * @brief Sets the logfile the server is writing to
+     *
+     * @param filename
+     * @return void
+     */
     static void setLogFile(const std::string &filename);
 
   private:

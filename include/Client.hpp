@@ -4,16 +4,12 @@
 #include <unistd.h>
 
 #include <chrono>
-#include <iostream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "Channel.hpp"
-
-#define MAX_RECV_BUFFER 8192
-#define MAX_SEND_BUFFER 1048576
-#define MAX_MESSAGE_LEN 510
+constexpr size_t MAX_RECV_BUFFER = 8192;
+constexpr size_t MAX_SEND_BUFFER = 1048576;
+constexpr size_t MAX_MESSAGE_LEN = 510;
 
 using TimeStamp = std::chrono::time_point<std::chrono::steady_clock>;
 
