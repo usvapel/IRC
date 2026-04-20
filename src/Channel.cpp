@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -100,7 +99,6 @@ unsigned int Channel::getUserCount(void) const {
   return (_users.size());
 }
 
-// INFO: Utilities:
 std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
     const Client &client, const std::string &key) {
   const std::string &nickname = client.getNickname();
@@ -230,21 +228,17 @@ void Channel::messageNewUserJoining(Client &clientToAdd) {
   User       &user = *it->second;
   std::string joinMessage = clientToAdd.generatePrefix() + " JOIN " + channel;
   messageAllUsersOnChannel(joinMessage);
-  // FIXME: Change _topic.length() to a mode check?
   if (_topic.length() > 0) {
     std::string topicMessage = channel + " :" + this->getTopic();
     _server.sendMessageWithCodeToUser(nick, nick, Numeric::RPL_TOPIC,
                                       topicMessage);
   }
-  // FIXME: Need to include other prefixes than operator?
   std::string prefix;
   if (user.isOperator()) {
     prefix = "@";
   } else {
     prefix = "";
   }
-  // FIXME: Change '=' to be handled dynamically if implementing secret channel
-  // or private channel.
   std::string nameReply =
       "= " + channel + " :" + prefix + nick + this->userList(user);
   _server.sendMessageWithCodeToUser(nick, nick, Numeric::RPL_NAMERPLY,

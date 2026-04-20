@@ -64,7 +64,6 @@ void Server::removeEmptyChannels(void) {
   }
 }
 
-// INFO: PRIVMSG
 void Server::handleMsg(int32_t fd, const Command &cmd) {
   bool privMsg = cmd.command == "PRIVMSG";
   LOG << "handling " << (privMsg ? "PRIVMSG" : "NOTICE") << " command";
@@ -109,7 +108,6 @@ void Server::handleMsg(int32_t fd, const Command &cmd) {
   replyMessage(_nickToFd.at(targetNick), fullMessage);
 }
 
-// INFO: TOPIC
 void Server::handleTopic(int32_t fd, const Command &cmd) {
   LOG << "handling TOPIC command";
   if (cmd.params.size() < 1) {
@@ -153,12 +151,11 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                             channel->get().getName() + " :" + new_topic;
+                                channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
 
-// INFO: INVITE
 void Server::handleInvite(int32_t fd, const Command &cmd) {
   LOG << "handling INVITE command";
   if (cmd.params.size() < 2) {
@@ -272,7 +269,6 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
   }
 }
 
-// INFO: KICK
 void Server::handleKick(int32_t fd, const Command &cmd) {
   LOG << "handling KICK command";
   if (cmd.params.size() < 2) {
@@ -280,11 +276,9 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
     return;
   }
 
-  //  FIXME: vv Throw here only for development/debugging purposes vv
   if (cmd.params.size() > 3) {
     throw std::runtime_error("Too many params for KICK command");
   }
-  // FIXME: ^^ Throw here only for development/debugging purposes ^^
 
   std::string              sender = _clients.at(fd).getNickname();
   OptionalChannel          channel;
@@ -357,7 +351,6 @@ void Server::handleKick(int32_t fd, const Command &cmd) {
   }
 }
 
-// INFO: JOIN
 void Server::handleJoin(int32_t fd, const Command &cmd) {
   LOG << "handling JOIN command";
   if (cmd.params.size() < 1) {
@@ -365,11 +358,9 @@ void Server::handleJoin(int32_t fd, const Command &cmd) {
     return;
   }
 
-  //  FIXME: vv Throw here only for development/debugging purposes vv
   if (cmd.params.size() > 2) {
     throw std::runtime_error("Too many params for JOIN command");
   }
-  // FIXME: ^^ Throw here only for development/debugging purposes ^^
 
   std::vector<std::string> channelNames;
   std::vector<std::string> channelKeys;
@@ -393,7 +384,6 @@ void Server::handleJoin(int32_t fd, const Command &cmd) {
       }
     }
   }
-  // FIXME: Should we allow the amount of keys be different than channel amount?
   if (channelKeys.size() > 0 && channelNames.size() != channelKeys.size()) {
     replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS, ":Not enough parameters");
     return;
@@ -441,7 +431,7 @@ void Server::handlePing(int32_t fd, const Command &cmd) {
     client.setWaitingForPong(false);
     return;
   }
-  std::string msg = ":" SERVER_NAME " PONG " SERVER_NAME;
+  std::string msg = ":" + SERVER_NAME + " PONG " + SERVER_NAME;
   if (!cmd.params.empty()) {
     msg += " " + cmd.params[0];
   }

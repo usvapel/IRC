@@ -1,7 +1,7 @@
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ SETTINGS ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Project configuration
-NAME			:= irc
+NAME			:= ircserv
 CXX				:= c++
 
 # Compiler flags
@@ -74,19 +74,28 @@ SRCS		:= \
 	main.cpp \
 
 # Source files needed for testing
-TEST_SRCS := \
-   channel_test.cpp  \
+TEST_SRCS	:= \
+	channel_test.cpp \
 
-TEST_EXEC := test_runner
+TEST_EXEC	:= test_runner
 
 # ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ BUILD VARIABLES ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ #
 
 # Derived build variables
 OBJS				:= $(addprefix $(OBJ_DIR)/,$(SRCS:.cpp=.o))
-CORE_OBJS           := $(addprefix $(OBJ_DIR)/,$(SRCS_CORE:.cpp=.o))
-TEST_OBJS           := $(addprefix $(OBJ_DIR)/,$(TEST_SRCS:.cpp=.o))
+CORE_OBJS			:= $(addprefix $(OBJ_DIR)/,$(SRCS_CORE:.cpp=.o))
+TEST_OBJS			:= $(addprefix $(OBJ_DIR)/,$(TEST_SRCS:.cpp=.o))
 TOTAL_SRCS			:= $(words $(SRCS))
 LOCK_FILE			:= $(OBJ_DIR)/.build.lock
+
+ifeq ($(MAKELEVEL),0)
+    $(shell rm -f $(LOCK_FILE))
+    TOTAL_SRCS := $(shell $(MAKE) -n $(NAME) | grep -c "$(CXX).* -c")
+    export TOTAL_SRCS
+endif
+ifeq ($(TOTAL_SRCS),0)
+    TOTAL_SRCS := 1
+endif
 
 # git log variables
 GIT_HASH			:= $(shell git rev-parse --short HEAD)
@@ -98,16 +107,16 @@ GIT_REMOTE_STATUS	:= $(shell git rev-list --left-right --count \
 						origin/$(GIT_BRANCH)...HEAD 2>/dev/null | \
 						awk '{print "↓"$$1" ↑"$$2}')
 GIT_COMMIT_COUNT	:= $(shell git rev-list --count HEAD)
-GIT_DATE        	:= $(shell git show -s --format="%cd" \
+GIT_DATE			:= $(shell git show -s --format="%cd" \
 						--date=format:"%Y-%m-%d %H:%M" HEAD)
 
 # Injects a fingerprint macro at build time, so program can log current build
-CXXFLAGS += -DGIT_HASH=\"$(GIT_HASH)\"
+CXXFLAGS	+= -DGIT_HASH=\"$(GIT_HASH)\"
 
-SHELL	:= /bin/bash
+SHELL		:= /bin/bash
 
 # Adds a buld fingerprint as a macro available in
-CXXFLAGS += -DGIT_HASH=\"$(GIT_HASH)\"
+CXXFLAGS	+= -DGIT_HASH=\"$(GIT_HASH)\"
 
 # Displays an animated progress bar with spinner, percentage,
 # and current file name during build

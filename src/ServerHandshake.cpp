@@ -57,7 +57,6 @@ void Server::handleUserJoin(int32_t fd, const Command &cmd) {
   }
 
   if (cmd.params[0].find_first_of("@!") != std::string::npos) {
-    // Could also just remove illegal chars instead of rejecting Numeric?
     replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS,
                  "USER :Illegal characters in username");
     return;
