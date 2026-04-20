@@ -103,15 +103,14 @@ unsigned int Channel::getUserCount(void) const {
 // INFO: Utilities:
 std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
     const Client &client, const std::string &key) {
+  const std::string &nickname = client.getNickname();
   if (isModeOn(ChannelMode::INVITE_ONLY)) {
-    auto it =
-        std::find(_inviteList.begin(), _inviteList.end(), client.getNickname());
+    auto it = std::ranges::find(_inviteList, nickname);
     if (it == _inviteList.end()) {
       _server.sendMessageWithCodeToUser(
-          client.getNickname(), client.getNickname(),
-          Numeric::ERR_INVITEONLYCHAN,
+          nickname, nickname, Numeric::ERR_INVITEONLYCHAN,
           this->getName() + " :Cannot join channel (+i)");
-      LOG << client.getNickname() + " can't join channel " + this->getName() +
+      LOG << nickname + " can't join channel " + this->getName() +
                  " because it's invite only\n";
       return (std::nullopt);
     } else {
@@ -121,30 +120,27 @@ std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
   if (isModeOn(ChannelMode::KEY_PROTECTED)) {
     if (key != _key) {
       _server.sendMessageWithCodeToUser(
-          client.getNickname(), client.getNickname(),
-          Numeric::ERR_BADCHANNELKEY,
+          nickname, nickname, Numeric::ERR_BADCHANNELKEY,
           this->getName() + " :Cannot join channel (+k)");
-      LOG << client.getNickname() + " can't join channel " + this->getName() +
+      LOG << nickname + " can't join channel " + this->getName() +
                  " because keys don't match\n";
       return (std::nullopt);
     }
   }
   if (_users.size() >= _userLimit) {
     _server.sendMessageWithCodeToUser(
-        client.getNickname(), client.getNickname(), Numeric::ERR_CHANNELISFULL,
+        nickname, nickname, Numeric::ERR_CHANNELISFULL,
         this->getName() + " :Cannot join channel (+l)");
-    LOG << client.getNickname() + " can't join channel " + this->getName() +
+    LOG << nickname + " can't join channel " + this->getName() +
                " because it's full\n";
     return (std::nullopt);
   }
-  auto it = _users.find(client.getNickname());
+  auto it = _users.find(nickname);
   if (it != _users.end()) {
     _server.sendMessageWithCodeToUser(
-        client.getNickname(), client.getNickname(), Numeric::ERR_USERONCHANNEL,
-        client.getNickname() + " " + this->getName() +
-            " :is already on channel");
-    LOG << client.getNickname() + " is already on channel " + this->getName() +
-               "\n";
+        nickname, nickname, Numeric::ERR_USERONCHANNEL,
+        nickname + " " + this->getName() + " :is already on channel");
+    LOG << nickname + " is already on channel " + this->getName() + "\n";
     return (std::nullopt);
   }
   return (addUser(client));
@@ -160,19 +156,12 @@ bool Channel::tryAddInvite(const User &senderUser, const std::string &invited) {
       return (false);
     }
   }
-  auto it = std::find(_inviteList.begin(), _inviteList.end(), invited);
+  auto it = std::ranges::find(_inviteList, invited);
   if (it != _inviteList.end()) {
-    OptionalClient client = _server.findClientByName(senderUser.getNickName());
-    if (client) {
-      _server.sendMessageWithCodeToUser(
-          client->get().getNickname(), client->get().getNickname(),
-          Numeric::ERR_USERONCHANNEL,
-          client->get().getNickname() + " " + this->getName() +
-              " :is already on channel");
-      return (false);
-    } else {
-      return (false);
-    }
+    _server.sendMessageWithCodeToUser(
+        sender, sender, Numeric::ERR_USERONCHANNEL,
+        sender + " " + this->getName() + " :is already on channel");
+    return (false);
   } else {
     _inviteList.push_back(invited);
     return (true);
