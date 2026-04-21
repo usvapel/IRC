@@ -89,6 +89,11 @@ class Channel {
      */
     unsigned int getUserCount(void) const;
 
+    /**
+     * @brief Returns the current ChanOp count on the channel
+     */
+    unsigned int getChanOpCount(void) const;
+
     // INFO: Utilities:
 
     /**

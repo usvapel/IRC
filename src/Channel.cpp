@@ -97,6 +97,11 @@ unsigned int Channel::getUserCount(void) const {
   return (_users.size());
 }
 
+unsigned int Channel::getChanOpCount(void) const {
+  return std::ranges::count_if(
+      _users, [](const auto &it) { return it.second->isOperator(); });
+}
+
 std::optional<std::reference_wrapper<Channel::User>> Channel::tryAddUser(
     const Client &client, const std::string &key) {
   const std::string &nickname = client.getNickname();
