@@ -81,30 +81,29 @@ void Server::run(void) {
         continue;
       }
       if (_epollEvents[i].data.fd == _listenSocket.getFD()) {
-        while (true) {
-          struct sockaddr_in client_addr;
-          socklen_t          addr_len = sizeof(client_addr);
-          int32_t            clientFD = accept(_listenSocket.getFD(),
-                                               (struct sockaddr *)&client_addr, &addr_len);
-          if (clientFD == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-              break;
-            } else {
-              throw std::runtime_error("fatal error accepting clients");
-            }
+        struct sockaddr_in client_addr;
+        socklen_t          addr_len = sizeof(client_addr);
+        int32_t            clientFD = accept(
+            _listenSocket.getFD(),
+            reinterpret_cast<struct sockaddr *>(&client_addr), &addr_len);
+        if (clientFD == -1) {
+          if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            continue;
           } else {
-            LOG << "New connection accepted on FD: " << clientFD;
-            _sockets.try_emplace(clientFD, Socket::makeClientSocket(clientFD));
-            _clients.try_emplace(clientFD, Client(&client_addr));
-            struct epoll_event connectionPoll{};
-            connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLERR;
-            connectionPoll.data.fd = clientFD;
-            if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, clientFD, &connectionPoll) <
-                0) {
-              removeClient(clientFD);
-              LOG << "Failed to add connection to polling list\n";
-              continue;
-            }
+            throw std::runtime_error("fatal error accepting clients");
+          }
+        } else {
+          LOG << "New connection accepted on FD: " << clientFD;
+          _sockets.try_emplace(clientFD, Socket::makeClientSocket(clientFD));
+          _clients.try_emplace(clientFD, Client(&client_addr));
+          struct epoll_event connectionPoll{};
+          connectionPoll.events = EPOLLIN | EPOLLHUP | EPOLLERR;
+          connectionPoll.data.fd = clientFD;
+          if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, clientFD, &connectionPoll) <
+              0) {
+            removeClient(clientFD);
+            LOG << "Failed to add connection to polling list\n";
+            continue;
           }
         }
       } else if (_epollEvents[i].events & EPOLLIN) {
