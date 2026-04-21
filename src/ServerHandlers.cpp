@@ -480,7 +480,8 @@ void Server::handleMode(int32_t fd, const Command &cmd) {
     return;
   } else {
     OptionalUser user = channel->get().findUser(nickname);
-    if (!user || user->get().isOperator() == false) {
+    uint32_t     chanOpCount = channel->get().getChanOpCount();
+    if ((!user || user->get().isOperator() == false) && chanOpCount != 0) {
       replyNumeric(fd, Numeric::ERR_CHANOPRIVSNEEDED,
                    ":You're not channel operator");
       return;
