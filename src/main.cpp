@@ -16,7 +16,7 @@ struct epoll_event ev, events[MAX_EVENTS];
 int                epollfd, nfds;
 
 int32_t validatePortValue(const char *port) {
-  int portValue = 0;
+  int32_t portValue = 0;
   auto [ptr, ec] = std::from_chars(port, port + strlen(port), portValue);
   if (ec != std::errc{} || ptr != port + strlen(port) || portValue < 1024 ||
       portValue > 65535) {
