@@ -195,15 +195,6 @@ class Channel {
     void messageAllUsersOnChannel(const std::string &message);
 
     /**
-     * @brief Send a <message> to all Users on channel.
-     *
-     * @param message Message to be sent to all users.
-     * @param sender Sender of <message> to be ignored.
-     */
-    void messageAllExceptSenderOnChannel(const std::string &message,
-                                         const std::string &sender);
-
-    /**
      * @brief Send a <message> with <code> to all users on channel.
      *
      * @param message Message to be sent to all users.

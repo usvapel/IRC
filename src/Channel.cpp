@@ -227,16 +227,6 @@ void Channel::messageAllUsersOnChannel(const std::string &sender,
   }
 }
 
-void Channel::messageAllExceptSenderOnChannel(const std::string &message,
-                                              const std::string &sender) {
-  for (const auto &e : _users) {
-    if (e.first == sender) {
-      continue;
-    }
-    _server.sendMessageToUser(e.first, e.first, message);
-  }
-}
-
 void Channel::messageNewUserJoining(Client &clientToAdd) {
   const std::string &nick = clientToAdd.getNickname();
   const std::string &channel = this->getName();
