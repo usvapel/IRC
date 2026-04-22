@@ -69,14 +69,6 @@ class Channel {
      */
     uint32_t getUserLimit(void) const;
 
-    // TODO: l - set / remove the user limit to channel;
-    // 4.2.9 User Limit
-    // A user limit may be set on channels by using the channel
-    // flag 'l'. When the limit is reached, servers MUST forbid their local
-    // users to join the channel. The value of the limit MUST only be made
-    // available to the channel members in the reply sent by the server to a
-    // MODE query.
-
     /**
      * @brief Sets the limit of simultaneous users on the channel.
      *
@@ -116,8 +108,6 @@ class Channel {
     std::optional<std::reference_wrapper<User>> findUser(
         const std::string &nickname) const;
 
-    // INFO: Operator commands:
-
     /**
      * @brief Attempts to remove the given User from the Server.
      *
@@ -145,33 +135,6 @@ class Channel {
      * @return Returns true if given flag is on. Otherwise return false.
      */
     bool isModeOn(const ChannelMode flag) const;
-
-    // TODO: i - toggle the invite - only channel                      flag;
-    // 4.2.2 Invite Only Flag
-    // When the channel flag 'i' is set, new members are only accepted if their
-    // mask matches Invite-list (See section 4.3.2) or they have been invited by
-    // a channel operator.  This flag also restricts the usage of the INVITE
-    // command (See "IRC Client Protocol" [IRC-CLIENT]) to channel operators.
-    // void toggleInviteOnly(void);
-
-    // TODO: t - toggle the topic settable by channel operator only flag;
-    // 4.2.8 Topic
-    // The channel flag 't' is used to restrict the usage of the
-    // TOPIC command to channel operators.
-    // void toggleTopicSettableByChanopOnly(void);
-
-    // TODO: k - set / remove the channel       key(password);
-    // 4.2.10 Channel Key
-    // When a channel key is set (by using the mode 'k'), servers MUST reject
-    // their local users request to join the channel unless this key is given.
-    // The channel key MUST only be made visible to the channel members in the
-    // reply sent by the server to a MODE query.
-    // void toggleChannelKey(void);
-
-    // TODO: o - give / take channel   operator privilege;
-    // 4.1.2 Channel Operator Status
-    // The mode 'o' is used to toggle the operator status of a channel member.
-    // void toggleChannelOperatorPrivilege(User &user);
 
     std::unordered_map<std::string, std::unique_ptr<Channel::User>> &
     getUsers() {

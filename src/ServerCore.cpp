@@ -121,7 +121,6 @@ void Server::run(void) {
           continue;
         }
         if (received > 0) {
-          std::cout << "bytes: " << received << std::endl;
           LOG << "client " << _epollEvents[i].data.fd
               << " received: " << buffer;
           auto clientIt = _clients.find(_epollEvents[i].data.fd);

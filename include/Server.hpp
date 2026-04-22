@@ -237,6 +237,7 @@ class Server {
                                    const std::string &message);
 
     void run(void);
+
     // INFO: Channel management:
     /**
      * @brief Creates a new Channel and emplaces it as a unique_ptr to _channels
