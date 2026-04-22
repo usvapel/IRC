@@ -38,8 +38,6 @@ class Logger {
     static TimeStamp     _lastCheck;
     static bool          _hasSpace;
 
-    std::string getTimestamp();
-
     /**
      * @brief Checks if there is sufficient disk space: the length of the
      * message + logBufferSize (1MB)

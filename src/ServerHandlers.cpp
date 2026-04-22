@@ -155,7 +155,7 @@ void Server::handleTopic(int32_t fd, const Command &cmd) {
   OptionalClient client = findClientByName(nick);
   std::string    prefix = client->get().generatePrefix();
   std::string    topicMessage = prefix + " " + cmd.command + " " +
-                             channel->get().getName() + " :" + new_topic;
+                                channel->get().getName() + " :" + new_topic;
   channel->get().messageAllUsersOnChannel(topicMessage);
   return;
 }
@@ -206,12 +206,6 @@ void Server::handlePart(int32_t fd, const Command &cmd) {
     replyNumeric(fd, Numeric::ERR_NEEDMOREPARAMS, ":Not enough parameters");
     return;
   }
-
-  //  FIXME: vv Throw here only for development/debugging purposes vv
-  if (cmd.params.size() > 2) {
-    throw std::runtime_error("Too many params for PART command");
-  }
-  // FIXME: ^^ Throw here only for development/debugging purposes ^^
 
   auto it = _clients.find(fd);
   if (it == _clients.end()) {
