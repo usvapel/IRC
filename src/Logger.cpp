@@ -1,11 +1,10 @@
 #include "Logger.hpp"
 
-#include <compare>
-#include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
+
+#include "Utils.hpp"
 
 // static variable inits
 std::ofstream Logger::_logFile;
@@ -15,14 +14,6 @@ bool          Logger::_hasSpace = true;
 
 Logger::Logger(const char *file, int line) : _file(file), _line(line) {}
 
-std::string Logger::getTimestamp() {
-  std::time_t now_time =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-  std::ostringstream ss;
-  ss << std::put_time(std::localtime(&now_time), "%Y-%m-%d %H:%M:%S");
-  return ss.str();
-}
-
 Logger::~Logger() {
   std::string        fileStr(_file);
   size_t             lastSlash = fileStr.find_last_of("/\\");
@@ -30,7 +21,7 @@ Logger::~Logger() {
                                      ? fileStr
                                      : fileStr.substr(lastSlash + 1);
   std::ostringstream finalLog;
-  finalLog << "[" << getTimestamp() << "] "
+  finalLog << "[" << Utils::getTimestamp() << "] "
            << "[" << shortFile << ":" << _line << "] " << _oss.str() << "\n";
   if (_logFile.is_open()) {
     std::string line = finalLog.str();

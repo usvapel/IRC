@@ -3,8 +3,9 @@
 #include <string>
 
 namespace Utils {
-bool validateNickname(const std::string &nick);
-bool isHandshakeCmd(const std::string &cmd);
+bool        validateNickname(const std::string &nick);
+bool        isHandshakeCmd(const std::string &cmd);
+std::string getTimestamp();
 }  // namespace Utils
 
 namespace Numeric {
