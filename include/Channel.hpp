@@ -234,7 +234,21 @@ class Channel {
      */
     void messageNewUserJoining(Client &clientToAdd);
 
+    /**
+     * @brief Checks if the given key matches channel's key.
+     *
+     * @param key Key to check against channel's key.
+     * @return Boolean value based on if keys match.
+     */
     bool keyIsCorrect(const std::string &key) const;
+
+    /**
+     * @brief Changes user's nick on channel to match the new nick on <client>.
+     *
+     * @param oldNick Old nickname of the client.
+     * @param client The client who's nickname is to be changed.
+     */
+    void changeUserNick(const std::string &oldNick, const Client &client);
 
   private:
     Server                  &_server;

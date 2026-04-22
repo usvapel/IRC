@@ -521,7 +521,7 @@ void Server::handleNickname(int32_t fd, const Command &cmd) {
       std::string oldNick = client.getNickname();
       std::string oldPrefix = client.generatePrefix();
       client.setNickname(nickname);
-      handleChangedNick(fd, oldNick);
+      handleChangedNick(fd, oldNick, oldPrefix);
       return;
     } else {
       client.setNickname(nickname);
@@ -538,23 +538,26 @@ void Server::handleNickname(int32_t fd, const Command &cmd) {
   }
 }
 
-// FIXME: Make set to a separate function and use this in QUIT too
-void Server::handleChangedNick(int32_t fd, const std::string &oldPrefix) {
-  Client           &client = _clients.at(fd);
-  std::string       nickname = client.getNickname();
-  std::set<int32_t> fds;
-  for (const auto &channelName : client.getChannels()) {
+void Server::handleChangedNick(int32_t fd, const std::string &oldNick,
+                               const std::string &oldPrefix) {
+  Client            &client = _clients.at(fd);
+  const std::string &nickname = client.getNickname();
+  messageAllUniqueContacts(fd, oldPrefix + " NICK " + nickname);
+  for (auto &channelName : client.getChannels()) {
     OptionalChannel channel = findChannel(channelName);
     if (!channel) {
       throw std::runtime_error("Channel " + channelName + " not existing");
     } else {
-      const auto &users = channel->get().getUsers();
-      for (const auto &[userNick, ptr] : users) {
-        fds.insert(_nickToFd.at(userNick));
-      }
+      channel->get().changeUserNick(oldNick, client);
     }
   }
-  for (const auto userFd : fds) {
-    replyMessage(userFd, oldPrefix + " NICK " + nickname);
+  auto it = _nickToFd.find(oldNick);
+  if (it == _nickToFd.end()) {
+    throw std::runtime_error(oldNick + " missing from _nickToFd");
+  }
+  if ((_nickToFd.try_emplace(nickname, fd).second)) {
+    _nickToFd.erase(it);
+  } else {
+    throw std::runtime_error("Failed to change nick for " + oldNick);
   }
 }

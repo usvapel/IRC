@@ -2,6 +2,7 @@
 #include <sys/epoll.h>
 
 #include <iomanip>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -59,5 +60,25 @@ void Server::sendMessageToUser(const std::string &from, const std::string &to,
       std::string errorMessage = to + " " + from + " :No such nick";
       replyNumeric(it->second, Numeric::ERR_NOSUCHNICK, errorMessage);
     }
+  }
+}
+
+void Server::messageAllUniqueContacts(int32_t fd, const std::string &message) {
+  Client           &client = _clients.at(fd);
+  std::string       nickname = client.getNickname();
+  std::set<int32_t> fds{fd};
+  for (const auto &channelName : client.getChannels()) {
+    OptionalChannel channel = findChannel(channelName);
+    if (!channel) {
+      throw std::runtime_error("Channel " + channelName + " not existing");
+    } else {
+      const auto &users = channel->get().getUsers();
+      for (const auto &[userNick, ptr] : users) {
+        fds.insert(_nickToFd.at(userNick));
+      }
+    }
+  }
+  for (const auto userFd : fds) {
+    replyMessage(userFd, message);
   }
 }

@@ -126,12 +126,22 @@ class Server {
     void sendWelcomeMessages(int32_t fd);
 
     /**
+     * @brief Sends a <message> to all unique contacts that the fd is sharing
+     * channels with.
+     *
+     * @param fd File descriptor of the sender.
+     * @param message Message to be sent.
+     */
+    void messageAllUniqueContacts(int32_t fd, const std::string &message);
+
+    /**
      * @brief Handle changed nick by notifying client's channels.
      *
      * @param fd Socket of the client changint nickname.
      * @param oldPrefix Old prefix used by the client.
      */
-    void handleChangedNick(int32_t fd, const std::string &oldPrefix);
+    void handleChangedNick(int32_t fd, const std::string &oldNick,
+                           const std::string &oldPrefix);
 
     bool isNicknameInUse(std::string const &nick);
 

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <ranges>
+#include <stdexcept>
 #include <utility>
 
 #include "Client.hpp"
@@ -329,6 +330,19 @@ std::string Channel::userList(const User &userToSkip) const {
 
 bool Channel::keyIsCorrect(const std::string &key) const {
   return (key == _key);
+}
+
+void Channel::changeUserNick(const std::string &oldNick, const Client &client) {
+  auto it = _users.find(oldNick);
+  if (it == _users.end()) {
+    return;
+  }
+  if (addUser(client)) {
+    _users.erase(it);
+  } else {
+    throw std::runtime_error("Failed to change nick for " + oldNick +
+                             " on channel " + getName());
+  }
 }
 
 // INFO: Channel::User:

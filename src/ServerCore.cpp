@@ -249,10 +249,10 @@ void Server::startDisconnect(int32_t fd, std::string reason,
   Client                  &removed = _clients.at(fd);
   std::vector<std::string> channels = removed.getChannels();
   std::string quitMsg = removed.generatePrefix() + " QUIT :Quit :" + reason;
+  messageAllUniqueContacts(fd, quitMsg);
   for (auto channelName : channels) {
     OptionalChannel chan = findChannel(channelName);
     if (chan.has_value()) {
-      chan->get().messageAllUsersOnChannel(removed.getNickname(), quitMsg);
       chan->get().removeUser(removed.getNickname());
     }
   }
